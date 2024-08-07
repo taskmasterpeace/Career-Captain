@@ -10,7 +10,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     with gr.Column():
         gr.Markdown("## Resume Editor")
         
-        resume_editor = gr.Markdown(value=context_manager.get_master_resume()['content'], editable=True)
+        resume_editor = gr.Markdown(value=context_manager.get_master_resume(), editable=True)
         update_button = gr.Button("Update Resume")
         
         with gr.Row():

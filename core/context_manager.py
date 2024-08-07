@@ -115,6 +115,9 @@ class CAPTAINContextManager:
         self.master_resume = resume
         self.application_history.append({"timestamp": time.time(), "action": "resume_update"})
 
+    def get_master_resume(self) -> str:
+        return self.master_resume
+
     def add_global_insight(self, key: str, value: Any) -> None:
         self.global_insights[key] = value
 

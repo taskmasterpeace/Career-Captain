@@ -1,6 +1,7 @@
 # core/ai_manager.py
 
-from langchain import PromptTemplate, LLMChain
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from typing import List, Dict, Any
@@ -8,7 +9,7 @@ import os
 
 class AIManager:
     def __init__(self):
-        self.llm = ChatOpenAI(temperature=0.7, model_name="gpt-3.5-turbo")
+        self.llm = ChatOpenAI(temperature=0.7, model_name="gpt-3.5-turbo", api_key=os.getenv("OPENAI_API_KEY"))
         self.system_message = SystemMessage(content="You are an AI assistant for the CAPTAIN job application system.")
 
     def create_chain(self, prompt_template: str) -> LLMChain:

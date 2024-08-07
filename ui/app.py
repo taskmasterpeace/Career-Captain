@@ -1,7 +1,6 @@
 # ui/app.py
 
 import gradio as gr
-import gradio as gr
 from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
 from ui.resume_tab import create_resume_tab

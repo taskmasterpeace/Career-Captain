@@ -160,13 +160,17 @@ import json
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
-from langchain.chains import LLMChain
+from langchain.chains import LLMChain, ConversationChain
 from langchain.memory import ConversationBufferMemory
 from config import OPENAI_API_KEY, LLM_TEMPERATURE
 
 class AIManager:
     def __init__(self):
         self.llm = ChatOpenAI(temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
+        self.conversation_chain = ConversationChain(
+            llm=self.llm,
+            memory=ConversationBufferMemory()
+        )
 
     def create_chain(self, prompt_template: str, input_variables: list) -> LLMChain:
         prompt = PromptTemplate(template=prompt_template, input_variables=input_variables)
@@ -181,3 +185,6 @@ class AIManager:
 
     def generate_response(self, chain: LLMChain, **kwargs) -> str:
         return chain.run(**kwargs)
+
+    def chat(self, user_input: str) -> str:
+        return self.conversation_chain.predict(input=user_input)

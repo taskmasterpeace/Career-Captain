@@ -30,6 +30,11 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             generate_cover_letter_button = gr.Button("Generate Cover Letter")
             cover_letter_output = gr.Markdown()
 
+        gr.Markdown("## Resume Chat")
+        chatbot = gr.Chatbot()
+        msg = gr.Textbox()
+        clear = gr.Button("Clear")
+
     def update_resume(content):
         resume_ai.update_resume(content)
         return "Resume updated successfully."
@@ -59,12 +64,20 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         jobs = context_manager.get_all_job_applications()
         return gr.Dropdown.update(choices=[f"{job['company']} - {job['position']}" for job in jobs.values()])
 
+    def chat(message, history):
+        response = ai_manager.chat(message)
+        history.append((message, response))
+        return "", history
+
     update_button.click(update_resume, inputs=[resume_editor], outputs=[gr.Markdown()])
     analyze_button.click(analyze_resume, outputs=[analysis_output])
     suggest_button.click(suggest_improvements, outputs=[suggestions_output])
     versions_dropdown.change(None, inputs=[versions_dropdown], outputs=[versions_dropdown])
     rollback_button.click(rollback_to_version, inputs=[versions_dropdown], outputs=[resume_editor])
     generate_cover_letter_button.click(generate_cover_letter, inputs=[job_dropdown], outputs=[cover_letter_output])
+
+    msg.submit(chat, [msg, chatbot], [msg, chatbot])
+    clear.click(lambda: None, None, chatbot, queue=False)
 
     # Update dropdowns when the tab is opened
     # Remove this line as gr.on() is not available

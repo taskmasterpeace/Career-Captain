@@ -153,7 +153,9 @@ Your simulation:"""
         return self.generate_response(prompt, {
             "job_description": job_description,
             "company_info": company_info
-        })from langchain import PromptTemplate, LLMChain
+        })
+
+from langchain import PromptTemplate, LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate

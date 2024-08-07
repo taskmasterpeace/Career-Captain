@@ -94,7 +94,9 @@ class CAPTAINContextManager:
         successful_applications = sum(
             1 for app in self.job_applications.values() if app.get("status") == "Offer Received"
         )
-        return successful_applications / total_applications if total_applications > 0 else 0.0import time
+        return successful_applications / total_applications if total_applications > 0 else 0.0
+
+import time
 import json
 from typing import Dict, List, Any
 

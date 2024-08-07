@@ -153,4 +153,26 @@ Your simulation:"""
         return self.generate_response(prompt, {
             "job_description": job_description,
             "company_info": company_info
-        })
+        })from langchain import PromptTemplate, LLMChain
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from config import OPENAI_API_KEY, LLM_TEMPERATURE
+
+class AIManager:
+    def __init__(self):
+        self.llm = ChatOpenAI(temperature=LLM_TEMPERATURE, openai_api_key=OPENAI_API_KEY)
+
+    def create_chain(self, prompt_template: str, input_variables: list) -> LLMChain:
+        prompt = PromptTemplate(template=prompt_template, input_variables=input_variables)
+        return LLMChain(llm=self.llm, prompt=prompt)
+
+    def create_chat_chain(self, system_template: str, human_template: str) -> LLMChain:
+        chat_prompt = ChatPromptTemplate.from_messages([
+            SystemMessagePromptTemplate.from_template(system_template),
+            HumanMessagePromptTemplate.from_template(human_template)
+        ])
+        return LLMChain(llm=self.llm, prompt=chat_prompt)
+
+    def generate_response(self, chain: LLMChain, **kwargs) -> str:
+        return chain.run(**kwargs)

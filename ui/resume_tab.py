@@ -4,6 +4,7 @@ import gradio as gr
 from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
 from core.resume_manager import ResumeManager
+from ai.resume_ai import ResumeAI
 
 def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager, resume_manager: ResumeManager, resume_ai: ResumeAI):
 

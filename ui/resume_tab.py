@@ -11,7 +11,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     with gr.Column():
         gr.Markdown("## Resume Editor")
         
-        resume_editor = gr.Markdown(value=context_manager.get_master_resume(), editable=True)
+        resume_editor = gr.Markdown(value=context_manager.get_master_resume())
         update_button = gr.Button("Update Resume")
         
         with gr.Row():
@@ -67,4 +67,4 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     generate_cover_letter_button.click(generate_cover_letter, inputs=[job_dropdown], outputs=[cover_letter_output])
 
     # Update dropdowns when the tab is opened
-    gr.on(lambda: gr.Dropdown.update(choices=[]), outputs=[versions_dropdown, job_dropdown])
+    # Remove this line as gr.on() is not available

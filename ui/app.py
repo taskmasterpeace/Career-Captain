@@ -31,12 +31,12 @@ def create_app():
             with gr.TabItem("Captain's Overview"):
                 create_captain_tab(context_manager, ai_manager, captain_ai)
 
-        @app.load(outputs=None)
+        @app.load()
         def on_load():
             # TODO: Implement loading saved state
             pass
 
-        @app.unload(outputs=None)
+        @app.unload()
         def on_unload():
             # TODO: Implement saving state
             pass

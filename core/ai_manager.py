@@ -156,7 +156,8 @@ Your simulation:"""
         })
 
 import json
-from langchain import PromptTemplate, LLMChain
+from langchain.prompts import PromptTemplate
+from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
@@ -164,7 +165,7 @@ from config import OPENAI_API_KEY, LLM_TEMPERATURE
 
 class AIManager:
     def __init__(self):
-        self.llm = ChatOpenAI(temperature=LLM_TEMPERATURE, openai_api_key=OPENAI_API_KEY)
+        self.llm = ChatOpenAI(temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
 
     def create_chain(self, prompt_template: str, input_variables: list) -> LLMChain:
         prompt = PromptTemplate(template=prompt_template, input_variables=input_variables)

@@ -5,7 +5,7 @@ from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
 # Remove the import of create_resume_tab from here
 from ui.job_applications_tab import create_job_applications_tab
-from ui.captain_tab import create_captain_tab
+# Remove the import of create_captain_tab from here
 
 def create_app():
     context_manager = CAPTAINContextManager()

@@ -3,7 +3,7 @@
 import gradio as gr
 from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
-from ai.resume_ai import ResumeAI
+# Remove the import of ResumeAI from here
 
 def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager):
     resume_ai = ResumeAI(ai_manager, context_manager)

@@ -155,6 +155,7 @@ Your simulation:"""
             "company_info": company_info
         })
 
+import json
 from langchain import PromptTemplate, LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory

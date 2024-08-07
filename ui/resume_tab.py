@@ -3,10 +3,9 @@
 import gradio as gr
 from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
-# Remove the import of ResumeAI from here
+from core.resume_manager import ResumeManager
 
-def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager):
-    resume_ai = ResumeAI(ai_manager, context_manager)
+def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager, resume_manager: ResumeManager):
 
     with gr.Column():
         gr.Markdown("## Resume Editor")

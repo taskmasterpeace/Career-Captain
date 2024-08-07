@@ -157,11 +157,11 @@ Your simulation:"""
         })
 
 import json
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
-from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
-from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from config import OPENAI_API_KEY, LLM_TEMPERATURE
 
 class AIManager:

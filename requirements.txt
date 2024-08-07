@@ -1,0 +1,64 @@
+# CAPTAIN - Comprehensive AI-Powered Tracking And INtegration
+# Requirements file
+
+# Core dependencies
+gradio==3.36.1
+langchain==0.0.200
+openai==0.27.8
+
+# Data handling and processing
+pandas==2.0.3
+pydantic==1.10.9
+
+# Date and time handling
+python-dateutil==2.8.2
+
+# Markdown support
+markdown==3.4.3
+
+# Web scraping (for potential future use)
+beautifulsoup4==4.12.2
+requests==2.31.0
+
+# Testing
+pytest==7.4.0
+
+# Code quality and formatting
+black==23.3.0
+flake8==6.0.0
+isort==5.12.0
+
+# Documentation
+sphinx==7.0.1
+
+# Debugging (optional, but useful for development)
+ipython==8.14.0
+
+# Environment management
+python-dotenv==1.0.0
+
+# Database (for potential future use)
+sqlalchemy==2.0.17
+
+# Progress bars (for long-running tasks)
+tqdm==4.65.0
+
+# JSON handling
+ujson==5.8.0
+
+# Concurrency
+aiohttp==3.8.4
+
+# PDF processing (for potential resume parsing)
+PyPDF2==3.0.1
+
+# Natural Language Processing
+nltk==3.8.1
+spacy==3.5.3
+
+# Data visualization (for potential future use)
+matplotlib==3.7.1
+seaborn==0.12.2
+
+# Dependency management
+pip-tools==6.14.0

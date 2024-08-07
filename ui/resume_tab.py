@@ -5,7 +5,7 @@ from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
 from core.resume_manager import ResumeManager
 
-def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager, resume_manager: ResumeManager):
+def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager, resume_manager: ResumeManager, resume_ai: ResumeAI):
 
     with gr.Column():
         gr.Markdown("## Resume Editor")
@@ -42,13 +42,13 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         return "### Suggested Improvements\n" + "\n".join(f"- {suggestion}" for suggestion in suggestions)
 
     def update_versions_dropdown():
-        versions = resume_ai.get_resume_versions()
+        versions = resume_manager.get_resume_versions()
         return gr.Dropdown.update(choices=[f"Version {v['version']} - {v['last_edited']}" for v in versions])
 
     def rollback_to_version(version):
         version_num = int(version.split()[1])
-        resume_ai.rollback_to_version(version_num)
-        return resume_ai.context_manager.get_master_resume()['content']
+        resume_manager.rollback_to_version(version_num)
+        return context_manager.get_master_resume()
 
     def generate_cover_letter(job_id):
         cover_letter = resume_ai.generate_cover_letter(job_id)

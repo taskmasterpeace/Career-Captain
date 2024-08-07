@@ -23,7 +23,7 @@ def create_app():
         
         with gr.Tabs():
             with gr.TabItem("Resume"):
-                create_resume_tab(context_manager, ai_manager, resume_manager)
+                create_resume_tab(context_manager, ai_manager, resume_manager, resume_ai)
             
             with gr.TabItem("Job Applications"):
                 create_job_applications_tab(context_manager, ai_manager)

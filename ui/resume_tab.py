@@ -17,7 +17,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         
         gr.Markdown("## Resume Editor")
         
-        resume_editor = gr.Markdown(value=context_manager.get_master_resume())
+        resume_editor = gr.Markdown(value=context_manager.get_master_resume(), label="Resume Editor")
         is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
         update_button = gr.Button("Update Resume")
         
@@ -25,8 +25,8 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             analyze_button = gr.Button("Analyze Resume")
             suggest_button = gr.Button("Suggest Improvements")
         
-        analysis_output = gr.Markdown()
-        suggestions_output = gr.Markdown()
+        analysis_output = gr.Markdown(label="Analysis Output")
+        suggestions_output = gr.Markdown(label="Improvement Suggestions")
         
         with gr.Accordion("Resume Versions", open=False):
             versions_dropdown = gr.Dropdown(choices=[], label="Select a version")
@@ -86,21 +86,32 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         return gr.Dropdown.update(choices=[f"{job['company']} - {job['position']}" for job in jobs.values()])
 
     def chat(message, history):
-        response = ai_manager.chat(message)
+        resume_content = resume_editor.value
+        response = ai_manager.chat(message, resume_content=resume_content, chat_history=history)
         history.append((message, response))
         return "", history
 
     def toggle_freeze(is_frozen):
         return is_frozen
 
+    def analyze_resume():
+        resume_content = resume_editor.value
+        analysis = resume_ai.analyze_resume(resume_content)
+        return "\n\n".join([f"### {k}\n" + "\n".join(f"- {item}" for item in v) for k, v in analysis.items()])
+
+    def suggest_improvements():
+        resume_content = resume_editor.value
+        suggestions = resume_ai.suggest_improvements(resume_content)
+        return "### Suggested Improvements\n" + "\n".join(f"- {suggestion}" for suggestion in suggestions)
+
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor])
     update_button.click(update_resume, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
-    analyze_button.click(analyze_resume, outputs=[analysis_output])
-    suggest_button.click(suggest_improvements, outputs=[suggestions_output])
+    analyze_button.click(analyze_resume, inputs=[], outputs=[analysis_output])
+    suggest_button.click(suggest_improvements, inputs=[], outputs=[suggestions_output])
     versions_dropdown.change(None, inputs=[versions_dropdown], outputs=[versions_dropdown])
     rollback_button.click(rollback_to_version, inputs=[versions_dropdown], outputs=[resume_editor])
     generate_cover_letter_button.click(generate_cover_letter, inputs=[job_dropdown], outputs=[cover_letter_output])
-    is_frozen.change(lambda x: not x, inputs=[is_frozen], outputs=[is_frozen])
+    is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[is_frozen])
 
     msg.submit(chat, [msg, chatbot], [msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)

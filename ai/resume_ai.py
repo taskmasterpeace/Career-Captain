@@ -1,41 +1,23 @@
-# ui/app.py
-
-import gradio as gr
-from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
-# Remove the import of create_resume_tab from here
-from ui.job_applications_tab import create_job_applications_tab
-# Remove the import of create_captain_tab from here
+from core.context_manager import CAPTAINContextManager
+from core.resume_manager import ResumeManager
 
-def create_app():
-    context_manager = CAPTAINContextManager()
-    ai_manager = AIManager()
+class ResumeAI:
+    def __init__(self, ai_manager: AIManager, context_manager: CAPTAINContextManager, resume_manager: ResumeManager):
+        self.ai_manager = ai_manager
+        self.context_manager = context_manager
+        self.resume_manager = resume_manager
 
-    with gr.Blocks(title="CAPTAIN - AI-Powered Job Application Tracker") as app:
-        gr.Markdown("# CAPTAIN: Comprehensive AI-Powered Tracking And INtegration")
-        
-        with gr.Tabs():
-            with gr.TabItem("Resume"):
-                create_resume_tab(context_manager, ai_manager)
-            
-            with gr.TabItem("Job Applications"):
-                create_job_applications_tab(context_manager, ai_manager)
-            
-            with gr.TabItem("Captain's Overview"):
-                create_captain_tab(context_manager, ai_manager)
+    def analyze_resume(self):
+        resume_content = self.resume_manager.get_resume()
+        analysis = self.ai_manager.analyze_resume(resume_content)
+        return analysis
 
-        @app.load(outputs=None)
-        def on_load():
-            # TODO: Implement loading saved state
-            pass
+    def suggest_improvements(self):
+        resume_content = self.resume_manager.get_resume()
+        suggestions = self.ai_manager.generate_resume_improvements(resume_content)
+        return suggestions
 
-        @app.unload(outputs=None)
-        def on_unload():
-            # TODO: Implement saving state
-            pass
-
-    return app
-
-if __name__ == "__main__":
-    app = create_app()
-    app.launch()
+    def update_resume(self, new_content):
+        self.resume_manager.update_resume(new_content)
+        self.context_manager.update_master_resume(new_content)

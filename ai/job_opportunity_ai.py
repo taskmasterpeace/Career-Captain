@@ -148,7 +148,7 @@ You are part of the CAPTAIN system. Collaborate with the Resume Tab and Captain 
         job_data = self.context_manager.get_job_application(job_id)
         resume_summary = self.context_manager.get_master_resume()
 
-        prompt = f"""Analyze the following job description for the {job_data['position']} position at {job_data['company']}. Identify key requirements, skills, and qualifications. Then, compare these to the user's master resume and suggest specific tailoring strategies.
+        prompt = f'''Analyze the following job description for the {job_data['position']} position at {job_data['company']}. Identify key requirements, skills, and qualifications. Then, compare these to the user\'s master resume and suggest specific tailoring strategies.
 
 Job Description:
 {job_description}
@@ -162,7 +162,7 @@ Provide your analysis in the following format:
 3. Desired Qualifications:
 4. Resume Tailoring Suggestions:
 5. Skill Gap Analysis:
-6. Application Strategy Recommendations:"""
+6. Application Strategy Recommendations:'''
 
         response = self.ai_manager.generate_response("job_analysis", {
             "job_title": job_data['position'],
@@ -184,7 +184,7 @@ Provide your analysis in the following format:
         job_data = self.context_manager.get_job_application(job_id)
         previous_status = job_data.get('status', 'Not Started')
 
-        prompt = f"""The user has updated their application status for the {job_data['position']} position at {job_data['company']}. The new status is: {new_status}
+        prompt = f'''The user has updated their application status for the {job_data['position']} position at {job_data['company']}. The new status is: {new_status}
 
 Previous status: {previous_status}
 
@@ -194,7 +194,7 @@ Based on this status change, provide the following:
 3. Potential challenges to prepare for
 4. Questions to ask the user about their experience so far
 5. Reminders of any important information or documents they might need next
-6. Advice on how to stand out in the next stage of the process"""
+6. Advice on how to stand out in the next stage of the process'''
 
         response = self.ai_manager.generate_response("status_update", {
             "job_title": job_data['position'],
@@ -219,7 +219,7 @@ Based on this status change, provide the following:
         job_data = self.context_manager.get_job_application(job_id)
         resume_skills = self.context_manager.get_master_resume()
 
-        prompt = f"""Based on the job description for {job_data['position']} at {job_data['company']}, identify skills or experiences from the user's master resume that should be highlighted or added. If there are gaps, suggest potential weekend projects or learning opportunities.
+        prompt = f'''Based on the job description for {job_data['position']} at {job_data['company']}, identify skills or experiences from the user\'s master resume that should be highlighted or added. If there are gaps, suggest potential weekend projects or learning opportunities.
 
 Job Description Key Points:
 {job_data.get('description_summary', 'No summary available')}
@@ -233,7 +233,7 @@ Provide your suggestions in the following format:
 3. Suggested Additions to Resume:
 4. Recommended Weekend Projects:
 5. Learning Opportunities:
-6. How These Improvements Align with Job Requirements:"""
+6. How These Improvements Align with Job Requirements:'''
 
         response = self.ai_manager.generate_response("skill_suggestion", {
             "job_title": job_data['position'],
@@ -254,14 +254,14 @@ Provide your suggestions in the following format:
     def suggest_networking_strategies(self, job_id: str) -> List[str]:
         job = self.context_manager.get_job_application(job_id)
 
-        prompt = f"""Suggest networking strategies for the following job application:
+        prompt = f'''Suggest networking strategies for the following job application:
 
 Position: {job['position']}
 Company: {job['company']}
 
 Please provide a list of networking strategies that could help with this job application. Consider both online and offline networking opportunities.
 
-Networking strategies:"""
+Networking strategies:'''
 
         response = self.ai_manager.generate_response("networking_strategies", {})
         return response.split('\n')

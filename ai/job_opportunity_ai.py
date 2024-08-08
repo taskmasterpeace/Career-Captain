@@ -256,8 +256,8 @@ Provide your suggestions in the following format:
 
         prompt = f"""Suggest networking strategies for the following job application:
 
-Position: {job['position']}
-Company: {job['company']}
+Position: {{job['position']}}
+Company: {{job['company']}}
 
 Please provide a list of networking strategies that could help with this job application. Consider both online and offline networking opportunities.
 

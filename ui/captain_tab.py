@@ -18,7 +18,7 @@ def create_captain_tab(context_manager, ai_manager, captain_ai):
         return overview
 
     def chat(message, history):
-        response = captain_ai.ai_manager.generate_response("Human: " + message, {})
+        response = captain_ai.ai_manager.chat(message)
         history.append((message, response))
         return "", history
 

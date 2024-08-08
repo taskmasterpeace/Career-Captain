@@ -198,7 +198,7 @@ class AIManager:
 
     def chat(self, user_input: str) -> str:
         messages = self.memory.chat_memory.messages + [HumanMessage(content=user_input)]
-        response = self.llm(messages)
+        response = self.llm.invoke(messages)
         self.memory.chat_memory.add_user_message(user_input)
         self.memory.chat_memory.add_ai_message(response.content)
         return response.content

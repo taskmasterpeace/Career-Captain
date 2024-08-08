@@ -164,21 +164,27 @@ Your simulation:"""
         })
 
 import json
-from typing import Dict, Any
+from typing import Dict, Any, List
 from langchain.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
+from langchain.schema import HumanMessage, AIMessage
 from config import OPENAI_API_KEY, LLM_TEMPERATURE
 
 class AIManager:
     def __init__(self):
-        self.llm = ChatOpenAI(temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY, callbacks=[])
+        self.llm = ChatOpenAI(model_name="gpt-4", temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
         self.memory = ConversationBufferMemory(return_messages=True)
+        self.prompt_templates = {}
 
-    def create_chain(self, prompt_template: str, input_variables: list) -> LLMChain:
-        prompt = PromptTemplate(template=prompt_template, input_variables=input_variables)
-        return LLMChain(llm=self.llm, prompt=prompt)
+    def create_prompt_template(self, name: str, template: str, input_variables: List[str]):
+        self.prompt_templates[name] = PromptTemplate(template=template, input_variables=input_variables)
+
+    def create_chain(self, prompt_name: str) -> LLMChain:
+        if prompt_name not in self.prompt_templates:
+            raise ValueError(f"Prompt template '{prompt_name}' not found")
+        return LLMChain(llm=self.llm, prompt=self.prompt_templates[prompt_name])
 
     def create_chat_chain(self, system_template: str, human_template: str) -> LLMChain:
         chat_prompt = ChatPromptTemplate.from_messages([
@@ -187,18 +193,57 @@ class AIManager:
         ])
         return LLMChain(llm=self.llm, prompt=chat_prompt)
 
-    def generate_response(self, prompt: str, context: Dict[str, Any]) -> str:
-        messages = [
-            SystemMessagePromptTemplate.from_template("You are an AI assistant for the CAPTAIN job application system."),
-            HumanMessagePromptTemplate.from_template(prompt)
-        ]
-        chat_prompt = ChatPromptTemplate.from_messages(messages)
-        chain = LLMChain(llm=self.llm, prompt=chat_prompt)
+    def generate_response(self, prompt_name: str, context: Dict[str, Any]) -> str:
+        chain = self.create_chain(prompt_name)
         return chain.run(**context)
 
     def chat(self, user_input: str) -> str:
         messages = self.memory.chat_memory.messages + [HumanMessage(content=user_input)]
-        response = self.llm.invoke(messages)
+        response = self.llm(messages)
         self.memory.chat_memory.add_user_message(user_input)
         self.memory.chat_memory.add_ai_message(response.content)
         return response.content
+
+    def analyze_resume(self, resume_content: str) -> Dict[str, List[str]]:
+        prompt_name = "resume_analysis"
+        if prompt_name not in self.prompt_templates:
+            self.create_prompt_template(
+                prompt_name,
+                "Analyze the following resume:\n\n{resume_content}\n\nProvide analysis in the following categories:\n1. Strengths\n2. Areas for Improvement\n3. Suggested Additions\n4. Formatting Recommendations\n5. Industry-Specific Advice",
+                ["resume_content"]
+            )
+        response = self.generate_response(prompt_name, {"resume_content": resume_content})
+        return self._parse_list_response(response)
+
+    def analyze_job_description(self, job_description: str, resume: str) -> Dict[str, List[str]]:
+        prompt_name = "job_description_analysis"
+        if prompt_name not in self.prompt_templates:
+            self.create_prompt_template(
+                prompt_name,
+                "Analyze the following job description and compare it to the resume:\n\nJob Description:\n{job_description}\n\nResume:\n{resume}\n\nProvide analysis in the following categories:\n1. Key Requirements\n2. Matching Skills\n3. Missing Skills\n4. Tailoring Suggestions",
+                ["job_description", "resume"]
+            )
+        response = self.generate_response(prompt_name, {"job_description": job_description, "resume": resume})
+        return self._parse_list_response(response)
+
+    def generate_job_search_overview(self, applications: List[Dict], resume: str) -> str:
+        prompt_name = "job_search_overview"
+        if prompt_name not in self.prompt_templates:
+            self.create_prompt_template(
+                prompt_name,
+                "Generate a job search overview based on the following information:\n\nJob Applications:\n{applications}\n\nResume:\n{resume}\n\nProvide an overview including:\n1. Summary of active applications\n2. Overall application success rate\n3. Suggestions for improvement\n4. Next steps in the job search",
+                ["applications", "resume"]
+            )
+        return self.generate_response(prompt_name, {"applications": json.dumps(applications), "resume": resume})
+
+    def _parse_list_response(self, response: str) -> Dict[str, List[str]]:
+        lines = response.strip().split('\n')
+        result = {}
+        current_category = None
+        for line in lines:
+            if line.startswith(('1.', '2.', '3.', '4.', '5.')):
+                current_category = line[3:].strip()
+                result[current_category] = []
+            elif current_category and line.strip():
+                result[current_category].append(line.strip())
+        return result

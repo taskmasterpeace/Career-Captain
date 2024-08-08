@@ -31,7 +31,7 @@ class AIManager:
         return response
 
     def analyze_resume(self, resume_content: str) -> Dict[str, Any]:
-        prompt = """Analyze the following resume and provide insights:
+        prompt = """Analyze the following resume in Markdown format and provide insights:
 
 Resume:
 {resume_content}

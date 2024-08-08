@@ -2,6 +2,7 @@ from core.ai_manager import AIManager
 from core.context_manager import CAPTAINContextManager
 from core.resume_manager import ResumeManager
 from typing import Dict, List
+import re
 
 class ResumeAI:
     def __init__(self, ai_manager: AIManager, context_manager: CAPTAINContextManager, resume_manager: ResumeManager):
@@ -35,6 +36,31 @@ Your suggestions:"""
     def update_resume(self, new_content: str):
         self.resume_manager.update_resume(new_content)
         self.context_manager.update_master_resume(new_content)
+
+    def convert_to_markdown(self, content: str) -> str:
+        # Split the content into lines
+        lines = content.split('\n')
+        markdown_lines = []
+        
+        for line in lines:
+            # Remove leading/trailing whitespace
+            line = line.strip()
+            
+            # Convert headers (assume lines in all caps are headers)
+            if line.isupper():
+                markdown_lines.append(f"## {line}")
+            # Convert bullet points
+            elif line.startswith('•') or line.startswith('-'):
+                markdown_lines.append(line)
+            # Convert everything else to regular text
+            elif line:
+                markdown_lines.append(line)
+            # Preserve empty lines
+            else:
+                markdown_lines.append('')
+        
+        # Join the lines back together
+        return '\n'.join(markdown_lines)
 
     def edit_resume(self, edit_request: str) -> Dict[str, str]:
         current_resume = self.resume_manager.get_resume()

@@ -259,9 +259,7 @@ Provide your suggestions in the following format:
 Position: {{job['position']}}
 Company: {{job['company']}}
 
-Please provide a list of networking strategies that could help with this job application. Consider both online and offline networking opportunities.
+Please provide a list of networking strategies that could help with this job application. Consider both online and offline networking opportunities."""
 
-Networking strategies:"""
-
-        response = self.ai_manager.generate_response("networking_strategies", {})
+        response = self.ai_manager.generate_response("networking_strategies", {"job": job})
         return response.split('\n')

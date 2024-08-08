@@ -130,17 +130,17 @@ class JobOpportunityAI:
         return self.ai_manager.generate_response("navigator_name", {"job_title": job_title, "company": company})
 
     def initialize_navigator(self, navigator_name: str, job_title: str, company: str) -> None:
-        system_template = rf"""You are {navigator_name}, an AI assistant specializing in the {job_title} position at {company}. Your role is to guide the user through their application process, provide insights about the job and company, and optimize their application strategy.
+        system_template = rf'''You are {navigator_name}, an AI assistant specializing in the {job_title} position at {company}. Your role is to guide the user through their application process, provide insights about the job and company, and optimize their application strategy.
 
 Key Responsibilities:
-1. Analyze job descriptions and align with user's resume
+1. Analyze job descriptions and align with user\'s resume
 2. Suggest resume enhancements to the Resume Tab
 3. Provide application status updates and next steps
 4. Offer interview preparation advice and potential questions
 5. Share insights about the company culture and job responsibilities
 6. Identify skill gaps and suggest improvement strategies
 
-You are part of the CAPTAIN system. Collaborate with the Resume Tab and Captain for a comprehensive job search strategy. Always maintain a professional, supportive, and encouraging tone."""
+You are part of the CAPTAIN system. Collaborate with the Resume Tab and Captain for a comprehensive job search strategy. Always maintain a professional, supportive, and encouraging tone.'''
 
         self.ai_manager.create_prompt_template("navigator_system", system_template, [])
 

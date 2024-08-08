@@ -173,7 +173,7 @@ from config import OPENAI_API_KEY, LLM_TEMPERATURE
 
 class AIManager:
     def __init__(self):
-        self.llm = ChatOpenAI(temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
+        self.llm = ChatOpenAI(temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY, callbacks=[])
         self.memory = ConversationBufferMemory(return_messages=True)
 
     def create_chain(self, prompt_template: str, input_variables: list) -> LLMChain:

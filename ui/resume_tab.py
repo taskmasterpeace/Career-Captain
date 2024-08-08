@@ -9,9 +9,16 @@ from ai.resume_ai import ResumeAI
 def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager, resume_manager: ResumeManager, resume_ai: ResumeAI):
 
     with gr.Column():
+        gr.Markdown("## Resume Input")
+        
+        resume_file = gr.File(label="Upload Resume (PDF or TXT)")
+        resume_text_input = gr.Textbox(label="Or paste your resume here", lines=10)
+        add_resume_button = gr.Button("Add/Update Resume")
+        
         gr.Markdown("## Resume Editor")
         
         resume_editor = gr.Markdown(value=context_manager.get_master_resume())
+        is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
         update_button = gr.Button("Update Resume")
         
         with gr.Row():
@@ -35,9 +42,23 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         msg = gr.Textbox()
         clear = gr.Button("Clear")
 
-    def update_resume(content):
+    def add_resume(file, text):
+        if file:
+            content = resume_manager.read_resume_file(file.name)
+        elif text:
+            content = text
+        else:
+            return "Please either upload a file or paste your resume text.", ""
+        
         resume_ai.update_resume(content)
-        return "Resume updated successfully."
+        return "Resume added successfully.", content
+
+    def update_resume(content, frozen):
+        if not frozen:
+            resume_ai.update_resume(content)
+            return "Resume updated successfully.", content
+        else:
+            return "Resume is frozen. Cannot update.", content
 
     def analyze_resume():
         analysis = resume_ai.analyze_resume()
@@ -69,12 +90,17 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         history.append((message, response))
         return "", history
 
-    update_button.click(update_resume, inputs=[resume_editor], outputs=[gr.Markdown()])
+    def toggle_freeze(is_frozen):
+        return not is_frozen
+
+    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor])
+    update_button.click(update_resume, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
     analyze_button.click(analyze_resume, outputs=[analysis_output])
     suggest_button.click(suggest_improvements, outputs=[suggestions_output])
     versions_dropdown.change(None, inputs=[versions_dropdown], outputs=[versions_dropdown])
     rollback_button.click(rollback_to_version, inputs=[versions_dropdown], outputs=[resume_editor])
     generate_cover_letter_button.click(generate_cover_letter, inputs=[job_dropdown], outputs=[cover_letter_output])
+    is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[is_frozen])
 
     msg.submit(chat, [msg, chatbot], [msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)

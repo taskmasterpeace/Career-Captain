@@ -5,6 +5,7 @@ from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
 from core.resume_manager import ResumeManager
 from ai.resume_ai import ResumeAI
+from prompts import RESUME_ANALYSIS_PROMPT, RESUME_IMPROVEMENT_PROMPT, COVER_LETTER_PROMPT, RESUME_CHAT_PROMPT
 
 def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager, resume_manager: ResumeManager, resume_ai: ResumeAI):
 
@@ -17,7 +18,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         
         gr.Markdown("## Resume Editor")
         
-        resume_editor = gr.Markdown(value=context_manager.get_master_resume(), label="Resume Editor")
+        resume_editor = gr.Markdown(value=context_manager.get_master_resume(), label="Resume Editor", interactive=True)
         is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
         update_button = gr.Button("Update Resume")
         
@@ -50,8 +51,9 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         else:
             return "Please either upload a file or paste your resume text.", ""
         
-        resume_ai.update_resume(content)
-        return "Resume added successfully.", content
+        markdown_content = resume_ai.convert_to_markdown(content)
+        resume_ai.update_resume(markdown_content)
+        return "Resume added successfully.", markdown_content
 
     def update_resume(content, frozen):
         if not frozen:
@@ -61,12 +63,14 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             return "Resume is frozen. Cannot update.", content
 
     def analyze_resume():
-        analysis = resume_ai.analyze_resume()
-        return "\n\n".join([f"### {k}\n" + "\n".join(f"- {item}" for item in v) for k, v in analysis.items()])
+        resume_content = resume_editor.value
+        analysis = ai_manager.generate_response(RESUME_ANALYSIS_PROMPT, {"resume_content": resume_content})
+        return analysis
 
     def suggest_improvements():
-        suggestions = resume_ai.suggest_improvements()
-        return "### Suggested Improvements\n" + "\n".join(f"- {suggestion}" for suggestion in suggestions)
+        resume_content = resume_editor.value
+        suggestions = ai_manager.generate_response(RESUME_IMPROVEMENT_PROMPT, {"resume_content": resume_content})
+        return suggestions
 
     def update_versions_dropdown():
         versions = resume_manager.get_resume_versions()
@@ -74,11 +78,16 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
 
     def rollback_to_version(version):
         version_num = int(version.split()[1])
-        resume_manager.rollback_to_version(version_num)
-        return context_manager.get_master_resume()
+        resume_content = resume_manager.rollback_to_version(version_num)
+        return resume_content
 
     def generate_cover_letter(job_id):
-        cover_letter = resume_ai.generate_cover_letter(job_id)
+        resume_content = resume_editor.value
+        job_details = context_manager.get_job_application(job_id)
+        cover_letter = ai_manager.generate_response(COVER_LETTER_PROMPT, {
+            "job_details": job_details,
+            "resume_content": resume_content
+        })
         return cover_letter
 
     def update_job_dropdown():
@@ -87,22 +96,15 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
 
     def chat(message, history):
         resume_content = resume_editor.value
-        response = ai_manager.chat(message, resume_content=resume_content, chat_history=history)
+        response = ai_manager.generate_response(RESUME_CHAT_PROMPT, {
+            "resume_content": resume_content,
+            "user_input": message
+        })
         history.append((message, response))
         return "", history
 
     def toggle_freeze(is_frozen):
         return is_frozen
-
-    def analyze_resume():
-        resume_content = resume_editor.value
-        analysis = resume_ai.analyze_resume(resume_content)
-        return "\n\n".join([f"### {k}\n" + "\n".join(f"- {item}" for item in v) for k, v in analysis.items()])
-
-    def suggest_improvements():
-        resume_content = resume_editor.value
-        suggestions = resume_ai.suggest_improvements(resume_content)
-        return "### Suggested Improvements\n" + "\n".join(f"- {suggestion}" for suggestion in suggestions)
 
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor])
     update_button.click(update_resume, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
@@ -117,4 +119,4 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     clear.click(lambda: None, None, chatbot, queue=False)
 
     # Update dropdowns when the tab is opened
-    # Remove this line as gr.on() is not available
+    # You may need to implement a custom event handler for this functionality

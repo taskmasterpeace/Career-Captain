@@ -254,14 +254,14 @@ Provide your suggestions in the following format:
     def suggest_networking_strategies(self, job_id: str) -> List[str]:
         job = self.context_manager.get_job_application(job_id)
 
-        prompt = f'''Suggest networking strategies for the following job application:
+        prompt = f"""Suggest networking strategies for the following job application:
 
 Position: {job['position']}
 Company: {job['company']}
 
 Please provide a list of networking strategies that could help with this job application. Consider both online and offline networking opportunities.
 
-Networking strategies:'''
+Networking strategies:"""
 
         response = self.ai_manager.generate_response("networking_strategies", {})
         return response.split('\n')

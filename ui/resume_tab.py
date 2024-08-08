@@ -91,7 +91,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         return "", history
 
     def toggle_freeze(is_frozen):
-        return not is_frozen
+        return is_frozen
 
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor])
     update_button.click(update_resume, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
@@ -100,7 +100,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     versions_dropdown.change(None, inputs=[versions_dropdown], outputs=[versions_dropdown])
     rollback_button.click(rollback_to_version, inputs=[versions_dropdown], outputs=[resume_editor])
     generate_cover_letter_button.click(generate_cover_letter, inputs=[job_dropdown], outputs=[cover_letter_output])
-    is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[is_frozen])
+    is_frozen.change(lambda x: not x, inputs=[is_frozen], outputs=[is_frozen])
 
     msg.submit(chat, [msg, chatbot], [msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)

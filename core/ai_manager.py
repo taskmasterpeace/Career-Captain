@@ -2,8 +2,9 @@
 
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
+from langchain.prompts import PromptTemplate, ChatPromptTemplate
 from langchain_core.messages import SystemMessage, HumanMessage
+from langchain.memory import ConversationBufferMemory
 from typing import List, Dict, Any
 import os
 
@@ -11,17 +12,23 @@ class AIManager:
     def __init__(self):
         self.llm = ChatOpenAI(temperature=0.7, model_name="gpt-3.5-turbo", api_key=os.getenv("OPENAI_API_KEY"))
         self.system_message = SystemMessage(content="You are an AI assistant for the CAPTAIN job application system.")
+        self.memory = ConversationBufferMemory(return_messages=True)
 
     def create_chain(self, prompt_template: str) -> LLMChain:
-        prompt = PromptTemplate(template=prompt_template, input_variables=["input"])
-        return LLMChain(llm=self.llm, prompt=prompt)
+        prompt = ChatPromptTemplate.from_messages([
+            self.system_message,
+            ("human", prompt_template)
+        ])
+        return LLMChain(llm=self.llm, prompt=prompt, memory=self.memory)
 
     def generate_response(self, prompt: str, context: Dict[str, Any]) -> str:
         messages = [
             self.system_message,
             HumanMessage(content=prompt.format(**context))
         ]
-        return self.llm(messages).content
+        response = self.llm(messages).content
+        self.memory.save_context({"input": prompt.format(**context)}, {"output": response})
+        return response
 
     def analyze_resume(self, resume_content: str) -> Dict[str, Any]:
         prompt = """Analyze the following resume and provide insights:

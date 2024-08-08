@@ -14,7 +14,32 @@ class CaptainAI:
         applications = self.context_manager.get_all_job_applications()
         resume = self.context_manager.get_master_resume()
         
-        return self.ai_manager.generate_job_search_overview(applications, resume['content'])
+        prompt = """Generate a job search overview based on the following information:
+
+Job Applications:
+{applications}
+
+Resume:
+{resume}
+
+Previous conversation context:
+{chat_history}
+
+Please provide:
+1. Summary of active applications
+2. Overall application success rate
+3. Suggestions for improvement
+4. Next steps in the job search
+
+Your overview:"""
+
+        context = {
+            "applications": applications,
+            "resume": resume['content'],
+            "chat_history": self.ai_manager.memory.load_memory_variables({})["history"]
+        }
+        
+        return self.ai_manager.generate_response(prompt, context)
 
     def suggest_weekend_project(self) -> Dict[str, str]:
         applications = self.context_manager.get_all_job_applications()

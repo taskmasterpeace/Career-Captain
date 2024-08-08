@@ -18,10 +18,14 @@ def create_captain_tab(context_manager, ai_manager, captain_ai):
         return overview
 
     def chat(message, history):
-        response = ai_manager.chat(message)
+        response = captain_ai.ai_manager.generate_response("Human: " + message, {})
         history.append((message, response))
         return "", history
 
+    def clear_chat():
+        captain_ai.ai_manager.memory.clear()
+        return None
+
     overview_button.click(generate_overview, outputs=[overview_output])
     msg.submit(chat, [msg, chatbot], [msg, chatbot])
-    clear.click(lambda: None, None, chatbot, queue=False)
+    clear.click(clear_chat, outputs=[chatbot])

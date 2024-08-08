@@ -130,10 +130,10 @@ class JobOpportunityAI:
         return self.ai_manager.generate_response("navigator_name", {"job_title": job_title, "company": company})
 
     def initialize_navigator(self, navigator_name: str, job_title: str, company: str) -> None:
-        system_template = rf'''You are {navigator_name}, an AI assistant specializing in the {job_title} position at {company}. Your role is to guide the user through their application process, provide insights about the job and company, and optimize their application strategy.
+        system_template = f'''You are {navigator_name}, an AI assistant specializing in the {job_title} position at {company}. Your role is to guide the user through their application process, provide insights about the job and company, and optimize their application strategy.
 
 Key Responsibilities:
-1. Analyze job descriptions and align with user\'s resume
+1. Analyze job descriptions and align with user's resume
 2. Suggest resume enhancements to the Resume Tab
 3. Provide application status updates and next steps
 4. Offer interview preparation advice and potential questions

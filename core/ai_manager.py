@@ -1,9 +1,9 @@
 # core/ai_manager.py
 
-from langchain_openai import ChatOpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate, ChatPromptTemplate
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain.schema import SystemMessage, HumanMessage
 from langchain.memory import ConversationBufferMemory
 from typing import List, Dict, Any
 import os
@@ -165,24 +165,16 @@ Your simulation:"""
 
 import json
 from typing import Dict, Any
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_openai import ChatOpenAI
+from langchain.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
-from langchain_core.runnables import RunnableWithMessageHistory
 from config import OPENAI_API_KEY, LLM_TEMPERATURE
 
 class AIManager:
     def __init__(self):
         self.llm = ChatOpenAI(temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
         self.memory = ConversationBufferMemory(return_messages=True)
-        self.chat_model = RunnableWithMessageHistory(
-            self.llm,
-            lambda session_id: self.memory,
-            input_messages_key="input",
-            history_messages_key="history"
-        )
 
     def create_chain(self, prompt_template: str, input_variables: list) -> LLMChain:
         prompt = PromptTemplate(template=prompt_template, input_variables=input_variables)
@@ -204,9 +196,9 @@ class AIManager:
         chain = LLMChain(llm=self.llm, prompt=chat_prompt)
         return chain.run(**context)
 
-    def chat(self, user_input: str, session_id: str = "default") -> str:
-        response = self.chat_model.invoke(
-            {"input": user_input},
-            config={"configurable": {"session_id": session_id}}
-        )
+    def chat(self, user_input: str) -> str:
+        messages = self.memory.chat_memory.messages + [HumanMessage(content=user_input)]
+        response = self.llm(messages)
+        self.memory.chat_memory.add_user_message(user_input)
+        self.memory.chat_memory.add_ai_message(response.content)
         return response.content

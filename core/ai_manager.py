@@ -164,6 +164,7 @@ Your simulation:"""
         })
 
 import json
+from typing import Dict, Any
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_openai import ChatOpenAI
@@ -194,15 +195,14 @@ class AIManager:
         ])
         return LLMChain(llm=self.llm, prompt=chat_prompt)
 
-    def generate_response(self, chain: LLMChain, **kwargs) -> str:
-        return chain.run(**kwargs)
-
-    def chat(self, user_input: str, session_id: str = "default") -> str:
-        response = self.chat_model.invoke(
-            {"input": user_input},
-            config={"configurable": {"session_id": session_id}}
-        )
-        return response.content
+    def generate_response(self, prompt: str, context: Dict[str, Any]) -> str:
+        messages = [
+            SystemMessagePromptTemplate.from_template("You are an AI assistant for the CAPTAIN job application system."),
+            HumanMessagePromptTemplate.from_template(prompt)
+        ]
+        chat_prompt = ChatPromptTemplate.from_messages(messages)
+        chain = LLMChain(llm=self.llm, prompt=chat_prompt)
+        return chain.run(**context)
 
     def chat(self, user_input: str, session_id: str = "default") -> str:
         response = self.chat_model.invoke(

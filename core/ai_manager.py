@@ -196,3 +196,10 @@ class AIManager:
             config={"configurable": {"session_id": session_id}}
         )
         return response.content
+
+    def chat(self, user_input: str, session_id: str = "default") -> str:
+        response = self.chat_model.invoke(
+            {"input": user_input},
+            config={"configurable": {"session_id": session_id}}
+        )
+        return response.content

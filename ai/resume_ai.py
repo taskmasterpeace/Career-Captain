@@ -38,11 +38,29 @@ Your suggestions:"""
         self.context_manager.update_master_resume(new_content)
 
     def chat_about_resume(self, user_message: str, resume_content: str) -> str:
+        # Split the resume content into chunks if it's too long
+        chunks = self._split_resume(resume_content)
+        
+        # Generate a response based on the resume content and user message
         response = self.ai_manager.generate_response("resume_chat", {
-            "resume_content": resume_content,
+            "resume_content": "\n".join(chunks),
             "user_input": user_message
         })
         return response
+
+    def _split_resume(self, resume_content: str, max_chunk_size: int = 1000) -> List[str]:
+        # Split the resume into chunks of maximum 1000 characters
+        chunks = []
+        current_chunk = ""
+        for line in resume_content.split('\n'):
+            if len(current_chunk) + len(line) > max_chunk_size:
+                chunks.append(current_chunk.strip())
+                current_chunk = line
+            else:
+                current_chunk += "\n" + line
+        if current_chunk:
+            chunks.append(current_chunk.strip())
+        return chunks
 
     def convert_to_markdown(self, content: str) -> str:
         # Split the content into lines

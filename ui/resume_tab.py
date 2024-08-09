@@ -67,7 +67,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         current_content = resume_editor.value
         response = resume_ai.chat_about_resume(message, current_content)
         history.append((message, response))
-        return "", history
+        return "", history, current_content
 
     def toggle_freeze(is_frozen):
         if is_frozen:

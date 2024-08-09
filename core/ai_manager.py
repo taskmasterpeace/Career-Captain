@@ -22,6 +22,10 @@ class AIManager:
         return LLMChain(llm=self.llm, prompt=prompt, memory=self.memory)
 
     def generate_response(self, prompt: str, context: Dict[str, Any]) -> str:
+        # If the resume content is too long, summarize it
+        if 'resume_content' in context and len(context['resume_content']) > 2000:
+            context['resume_content'] = self.summarize_text(context['resume_content'])
+
         messages = [
             self.system_message,
             HumanMessage(content=prompt.format(**context))
@@ -29,6 +33,14 @@ class AIManager:
         response = self.llm(messages).content
         self.memory.save_context({"input": prompt.format(**context)}, {"output": response})
         return response
+
+    def summarize_text(self, text: str, max_length: int = 2000) -> str:
+        if len(text) <= max_length:
+            return text
+
+        summarize_prompt = f"Summarize the following text in no more than {max_length} characters:\n\n{text}"
+        summary = self.llm([HumanMessage(content=summarize_prompt)]).content
+        return summary[:max_length]
 
     def analyze_resume(self, resume_content: str) -> Dict[str, Any]:
         prompt = """Analyze the following resume in Markdown format and provide insights:

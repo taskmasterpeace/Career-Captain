@@ -77,25 +77,18 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         history.append((message, response))
         return "", history
 
-    def update_resume_display():
-        current_resume = context_manager.get_master_resume()
-        print(f"Updating resume display. Length: {len(current_resume)}")  # Debug print
-        return current_resume
+    def update_resume_display(is_frozen, current_content):
+        if not is_frozen:
+            context_manager.update_master_resume(current_content)
+        print(f"Updating resume display. Length: {len(current_content)}")  # Debug print
+        return gr.update(value=current_content, interactive=not is_frozen)
 
-    # Add this line after creating the resume_editor component
-    resume_editor.change(update_resume_display, outputs=[resume_editor])
-
-    def update_chat_context(current_content):
-        return current_content
-
-    resume_editor.change(update_chat_context, inputs=[resume_editor], outputs=[current_resume_content])
-
-    def toggle_freeze(is_frozen):
+    def toggle_freeze(is_frozen, current_content):
         if is_frozen:
             gr.Warning("Resume is now frozen. You cannot make changes.")
         else:
             gr.Warning("Resume is now unfrozen. You can make changes.")
-        return is_frozen
+        return gr.update(interactive=not is_frozen), current_content
 
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor, current_resume_content])
     resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor, current_resume_content])
@@ -103,8 +96,6 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     msg.submit(chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)
 
-    # Handle freezing/unfreezing
-    is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[is_frozen])
-
-    # Update the resume content when the editor changes
-    resume_editor.change(lambda x: x, inputs=[resume_editor], outputs=[current_resume_content])
+    # Handle freezing/unfreezing and updating resume display
+    is_frozen.change(toggle_freeze, inputs=[is_frozen, resume_editor], outputs=[resume_editor, current_resume_content])
+    resume_editor.change(update_resume_display, inputs=[is_frozen, resume_editor], outputs=[resume_editor])

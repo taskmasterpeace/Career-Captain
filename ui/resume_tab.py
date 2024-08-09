@@ -18,7 +18,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         
         gr.Markdown("## Resume Editor")
         
-        resume_editor = gr.Markdown(value=context_manager.get_master_resume(), label="Resume Editor", interactive=True)
+        resume_editor = gr.Markdown(value=context_manager.get_master_resume(), label="Resume Editor")
         is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
         update_button = gr.Button("Update Resume")
         

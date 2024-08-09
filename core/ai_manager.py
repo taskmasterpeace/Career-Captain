@@ -1,6 +1,6 @@
 # core/ai_manager.py
 
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate, ChatPromptTemplate
 from langchain.schema import SystemMessage, HumanMessage

@@ -1,8 +1,8 @@
 # core/ai_manager.py
 
 from langchain_openai import ChatOpenAI
-from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate, ChatPromptTemplate
+from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 from langchain.schema import SystemMessage, HumanMessage
 from langchain.memory import ConversationBufferMemory
 from typing import List, Dict, Any
@@ -14,23 +14,20 @@ class AIManager:
         self.system_message = SystemMessage(content="You are an AI assistant for the CAPTAIN job application system.")
         self.memory = ConversationBufferMemory(return_messages=True)
 
-    def create_chain(self, prompt_template: str) -> LLMChain:
+    def create_chain(self, prompt_template: str):
         prompt = ChatPromptTemplate.from_messages([
             self.system_message,
             ("human", prompt_template)
         ])
-        return LLMChain(llm=self.llm, prompt=prompt, memory=self.memory)
+        return prompt | self.llm | StrOutputParser()
 
     def generate_response(self, prompt: str, context: Dict[str, Any]) -> str:
         # If the resume content is too long, summarize it
         if 'resume_content' in context and len(context['resume_content']) > 2000:
             context['resume_content'] = self.summarize_text(context['resume_content'])
 
-        messages = [
-            self.system_message,
-            HumanMessage(content=prompt.format(**context))
-        ]
-        response = self.llm(messages).content
+        chain = self.create_chain(prompt)
+        response = chain.invoke(context)
         self.memory.save_context({"input": prompt.format(**context)}, {"output": response})
         return response
 

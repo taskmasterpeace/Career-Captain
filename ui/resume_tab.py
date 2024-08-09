@@ -20,6 +20,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         gr.Markdown("## Resume Editor")
         
         resume_editor = gr.Markdown(value=context_manager.get_master_resume(), label="Resume Editor")
+        current_resume_content = gr.State(value=context_manager.get_master_resume())
         is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
         update_button = gr.Button("Update Resume")
         
@@ -60,17 +61,10 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         if text:
             markdown_content = resume_ai.convert_to_markdown(text)
             resume_ai.update_resume(markdown_content)
-            return "Resume updated successfully from pasted text.", markdown_content
+            context_manager.update_master_resume(markdown_content)
+            return "Resume updated successfully from pasted text.", markdown_content, markdown_content
         else:
-            return "Please paste your resume text before updating.", ""
-
-    def update_from_paste(text):
-        if text:
-            markdown_content = resume_ai.convert_to_markdown(text)
-            resume_ai.update_resume(markdown_content)
-            return "Resume updated successfully from pasted text.", markdown_content
-        else:
-            return "Please paste your resume text before updating.", ""
+            return "Please paste your resume text before updating.", "", current_resume_content.value
 
     def update_resume(content, frozen):
         if not frozen:
@@ -111,9 +105,8 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         jobs = context_manager.get_all_job_applications()
         return gr.Dropdown.update(choices=[f"{job['company']} - {job['position']}" for job in jobs.values()])
 
-    def chat(message, history):
-        resume_content = resume_editor.value
-        response = resume_ai.chat_about_resume(message, resume_content)
+    def chat(message, history, current_content):
+        response = resume_ai.chat_about_resume(message, current_content)
         history.append((message, response))
         return "", history
 
@@ -147,17 +140,16 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             return "Resume is frozen. Cannot update.", content
 
     add_resume_button.click(add_resume, inputs=[resume_file], outputs=[gr.Markdown(), resume_editor])
-    update_from_paste_button.click(update_from_paste, inputs=[resume_text_input], outputs=[gr.Markdown(), resume_editor])
-    update_button.click(update_resume_with_formatting, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
-    update_from_paste_button.click(update_from_paste, inputs=[resume_text_input], outputs=[gr.Markdown(), resume_editor])
+    update_from_paste_button.click(update_from_paste, inputs=[resume_text_input], outputs=[gr.Markdown(), resume_editor, current_resume_content])
+    update_button.click(update_resume_with_formatting, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor, current_resume_content])
     analyze_button.click(analyze_resume, inputs=[], outputs=[analysis_output])
     suggest_button.click(suggest_improvements, inputs=[], outputs=[suggestions_output])
     versions_dropdown.change(None, inputs=[versions_dropdown], outputs=[versions_dropdown])
-    rollback_button.click(rollback_to_version, inputs=[versions_dropdown], outputs=[resume_editor])
+    rollback_button.click(rollback_to_version, inputs=[versions_dropdown], outputs=[resume_editor, current_resume_content])
     generate_cover_letter_button.click(generate_cover_letter, inputs=[job_dropdown], outputs=[cover_letter_output])
     is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[is_frozen])
 
-    msg.submit(chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
+    msg.submit(chat, inputs=[msg, chatbot, current_resume_content], outputs=[msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)
 
     # Update the resume content for the chatbot

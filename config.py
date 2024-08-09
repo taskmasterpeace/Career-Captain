@@ -36,13 +36,13 @@ class DarkTheme(Base):
             font_mono=("IBM Plex Mono", "monospace"),
         )
         self.set(
-            body_background_fill=Color.parse("#1e293b"),  # Dark slate blue
-            background_fill_primary=Color.parse("#334155"),  # Slightly lighter slate
-            background_fill_secondary=Color.parse("#475569"),  # Even lighter slate
-            text_color=Color.parse("#e2e8f0"),  # Light gray for text
-            button_primary_background_fill=Color.parse("#3b82f6"),  # Bright blue for buttons
-            button_primary_text_color=Color.parse("#ffffff"),  # White text on buttons
-            border_color_primary=Color.parse("#64748b"),  # Muted blue for borders
+            body_background_fill="#1e293b",  # Dark slate blue
+            background_fill_primary="#334155",  # Slightly lighter slate
+            background_fill_secondary="#475569",  # Even lighter slate
+            text_color="#e2e8f0",  # Light gray for text
+            button_primary_background_fill="#3b82f6",  # Bright blue for buttons
+            button_primary_text_color="#ffffff",  # White text on buttons
+            border_color_primary="#64748b",  # Muted blue for borders
         )
 
 GRADIO_THEME = DarkTheme()

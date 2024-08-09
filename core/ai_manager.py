@@ -197,7 +197,21 @@ class AIManager:
         # Add the format_resume prompt template
         self.create_prompt_template(
             "format_resume",
-            "Format and improve the following resume content:\n\n{resume_content}\n\nProvide the formatted and improved resume:",
+            """Format and improve the following resume content:
+
+{resume_content}
+
+Please format the resume using the following guidelines:
+1. Use Markdown formatting.
+2. Start with the candidate's name as a top-level header (# Name).
+3. Follow with sections for Contact Information, Summary, Experience, Education, and Skills.
+4. Use second-level headers (##) for each section.
+5. Use bullet points (-) for listing items under each section.
+6. Ensure consistent spacing between sections.
+7. Highlight key achievements and responsibilities.
+8. Keep the overall structure clean and professional.
+
+Provide the formatted and improved resume:""",
             ["resume_content"]
         )
 

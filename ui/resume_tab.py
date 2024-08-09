@@ -90,7 +90,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             resume_ai.update_resume(formatted_resume)
         
         print(f"Resume added. Length: {len(formatted_resume)}")  # Debug print
-        return status, formatted_resume, formatted_resume
+        return status, formatted_resume, formatted_resume, formatted_resume
 
     def chat(message, history, current_content):
         if message.lower().startswith(("edit", "change", "update", "modify")):

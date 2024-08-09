@@ -177,6 +177,13 @@ class AIManager:
         self.llm = ChatOpenAI(model_name="gpt-4", temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
         self.memory = ConversationBufferMemory(return_messages=True)
         self.prompt_templates = {}
+        
+        # Add the resume_chat prompt template
+        self.create_prompt_template(
+            "resume_chat",
+            "You are an AI assistant specializing in resume advice. The user's current resume is:\n\n{resume_content}\n\nUser: {user_input}\nAI Assistant:",
+            ["resume_content", "user_input"]
+        )
 
     def create_prompt_template(self, name: str, template: str, input_variables: List[str]):
         self.prompt_templates[name] = PromptTemplate(template=template, input_variables=input_variables)

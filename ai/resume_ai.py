@@ -37,13 +37,17 @@ Your suggestions:"""
         self.resume_manager.update_resume(new_content)
         self.context_manager.update_master_resume(new_content)
 
-    def chat_about_resume(self, user_message: str, resume_content: str) -> str:
-        # Split the resume content into chunks if it's too long
-        chunks = self._split_resume(resume_content)
+    def chat_about_resume(self, user_message: str, resume_content: str = None) -> str:
+        if resume_content is None or not resume_content.strip():
+            resume_content = self.context_manager.get_master_resume()
         
-        # Generate a response based on the resume content and user message
+        print(f"Chat about resume. Resume length: {len(resume_content)}")  # Debug print
+        
+        if not resume_content.strip():
+            return "I'm sorry, but I don't have access to your resume. Could you please make sure you've added your resume to the system?"
+
         response = self.ai_manager.generate_response("resume_chat", {
-            "resume_content": "\n".join(chunks),
+            "resume_content": resume_content,
             "user_input": user_message
         })
         return response

@@ -217,6 +217,14 @@ class AIManager:
         return LLMChain(llm=self.llm, prompt=chat_prompt)
 
     def generate_response(self, prompt_name: str, context: Dict[str, Any]) -> str:
+        print(f"Generating response for prompt: {prompt_name}")
+        print(f"Context keys: {context.keys()}")
+        if 'resume_content' in context:
+            print(f"Resume content length: {len(context['resume_content'])}")
+        
+        if prompt_name not in self.prompt_templates:
+            raise ValueError(f"Prompt template '{prompt_name}' not found")
+        
         chain = self.create_chain(prompt_name)
         return chain.run(**context)
 

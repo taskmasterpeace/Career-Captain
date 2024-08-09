@@ -61,13 +61,29 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             status, formatted_resume = process_resume(text)
         else:
             status, formatted_resume = "No resume content provided.", ""
+        
+        if formatted_resume:
+            context_manager.update_master_resume(formatted_resume)
+            resume_manager.update_resume(formatted_resume)
+            resume_ai.update_resume(formatted_resume)
+        
+        print(f"Resume added. Length: {len(formatted_resume)}")  # Debug print
         return status, formatted_resume, formatted_resume
 
     def chat(message, history):
-        current_content = resume_editor.value
+        current_content = context_manager.get_master_resume()
+        print(f"Chat function. Current resume length: {len(current_content)}")  # Debug print
         response = resume_ai.chat_about_resume(message, current_content)
         history.append((message, response))
-        return "", history, current_content
+        return "", history
+
+    def update_resume_display():
+        current_resume = context_manager.get_master_resume()
+        print(f"Updating resume display. Length: {len(current_resume)}")  # Debug print
+        return current_resume
+
+    # Add this line after creating the resume_editor component
+    resume_editor.change(update_resume_display, outputs=[resume_editor])
 
     def update_chat_context(current_content):
         return current_content

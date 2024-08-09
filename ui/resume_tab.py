@@ -24,22 +24,16 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             # Right column: Resume Editor
             with gr.Column(scale=1):
                 gr.Markdown("## Resume Editor")
-                resume_editor = gr.Markdown(
+                resume_editor = gr.TextArea(
                     value=context_manager.get_master_resume(),
                     label="Your Resume (Markdown)",
-                    elem_id="resume-markdown"
-                )
-                with gr.Row():
-                    is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
-                    update_resume_btn = gr.Button("Update Resume")
-                resume_editor_raw = gr.Textbox(
-                    value=context_manager.get_master_resume(),
-                    label="Edit your resume (Markdown)",
                     lines=20,
                     max_lines=30,
                     elem_id="resume-editor"
                 )
-                current_resume_content = gr.State(value=context_manager.get_master_resume())
+                with gr.Row():
+                    is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
+                    update_resume_btn = gr.Button("Update Resume")
 
         # Bottom row: Resume Input (in an accordion)
         with gr.Accordion("Resume Input", open=False):
@@ -90,7 +84,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             resume_ai.update_resume(formatted_resume)
         
         print(f"Resume added. Length: {len(formatted_resume)}")  # Debug print
-        return status, formatted_resume, formatted_resume, formatted_resume
+        return status, formatted_resume
 
     def chat(message, history, current_content):
         try:
@@ -115,36 +109,21 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             history.append((message, error_message))
             return "", history, current_content, f"Resume Status: Error occurred"
 
-    def update_resume_display(is_frozen, current_content):
-        if not is_frozen:
-            context_manager.update_master_resume(current_content)
-        print(f"Updating resume display. Length: {len(current_content)}")  # Debug print
-        return gr.update(value=current_content), gr.update(value=current_content), f"Resume Status: Updated (Length: {len(current_content)})"
+    def toggle_freeze(is_frozen):
+        return gr.update(interactive=not is_frozen)
 
-    def toggle_freeze(is_frozen, current_content):
-        try:
-            if is_frozen:
-                status = "Resume Status: Frozen"
-            else:
-                status = "Resume Status: Editable"
-            return gr.update(interactive=not is_frozen), gr.update(interactive=not is_frozen), current_content, status
-        except Exception as e:
-            print(f"Error in toggle_freeze: {str(e)}")
-            return gr.update(), gr.update(), current_content, f"Error: {str(e)}"
+    def update_resume(content):
+        context_manager.update_master_resume(content)
+        resume_manager.update_resume(content)
+        return f"Resume Status: Updated (Length: {len(content)})"
 
-    def update_resume(current_content):
-        context_manager.update_master_resume(current_content)
-        return current_content, f"Resume Status: Updated (Length: {len(current_content)})"
-
-    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, resume_editor_raw, current_resume_content])
-    resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, resume_editor_raw, current_resume_content])
+    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor])
+    resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor])
     
-    msg.submit(chat, inputs=[msg, chatbot, current_resume_content], outputs=[msg, chatbot, resume_editor, resume_editor_raw, resume_status])
+    msg.submit(chat, inputs=[msg, chatbot, resume_editor], outputs=[msg, chatbot, resume_editor, resume_status])
     clear.click(lambda: None, None, chatbot, queue=False)
 
-    # Handle freezing/unfreezing and updating resume display
-    is_frozen.change(toggle_freeze, inputs=[is_frozen, resume_editor_raw], outputs=[resume_editor_raw, resume_editor, current_resume_content, resume_status])
-    resume_editor_raw.change(update_resume_display, inputs=[is_frozen, resume_editor_raw], outputs=[resume_editor, resume_editor_raw, resume_status])
-    update_resume_btn.click(update_resume, inputs=[resume_editor_raw], outputs=[resume_editor, resume_status])
+    is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[resume_editor])
+    update_resume_btn.click(update_resume, inputs=[resume_editor], outputs=[resume_status])
 
     return resume_tab

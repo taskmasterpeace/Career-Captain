@@ -5,8 +5,8 @@ from core.context_manager import CAPTAINContextManager
 from core.ai_manager import AIManager
 from core.resume_manager import ResumeManager
 from ai.resume_ai import ResumeAI
-from langchain.document_loaders import TextLoader
-from langchain.text_splitter import CharacterTextSplitter
+from langchain_community.document_loaders import TextLoader
+from langchain_text_splitters import CharacterTextSplitter
 
 def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager, resume_manager: ResumeManager, resume_ai: ResumeAI):
 

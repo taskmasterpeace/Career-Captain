@@ -180,7 +180,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage, AIMessage
-from config import OPENAI_API_KEY, LLM_TEMPERATURE
+from config import OPENAI_API_KEY, LLM_TEMPERATURE, LLM_MODEL
 
 class AIManager:
     def __init__(self):

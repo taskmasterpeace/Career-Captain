@@ -56,45 +56,18 @@ Your suggestions:"""
 
 {current_resume}
 
-The user or Job Opportunity Navigator has requested the following change:
+The user has requested the following change:
 
 {edit_request}
 
-Implement this change while maintaining the overall structure and formatting of the resume. Provide your response in the following format:
-
-1. Updated Resume Section:
-[Provide the updated section here]
-
-2. Explanation of Changes:
-[Explain what was changed and why]
-
-3. Potential Impact:
-[Discuss how this change might affect the overall resume and job applications]
-
-4. Additional Suggestions:
-[Offer any related improvements or cautions]
-
-5. Next Steps for Further Improvement:"""
+Implement this change by providing a complete, updated version of the resume. Make sure to include all sections, even those not affected by the edit. Your response should be the entire updated resume in Markdown format."""
 
         response = self.ai_manager.generate_response("resume_edit", {"current_resume": current_resume, "edit_request": edit_request})
         
-        # Parse the response into a structured format
-        sections = response.split('\n\n')
-        result = {}
-        for section in sections:
-            if ':' in section:
-                key, value = section.split(':', 1)
-                result[key.strip()] = value.strip()
-            else:
-                # Handle cases where there's no colon, e.g., the updated resume section
-                result["1. Updated Resume Section"] = section.strip()
+        # Update the entire resume with the new content
+        self.update_resume(response)
 
-        # Update the resume with the new content
-        updated_section = result.get("1. Updated Resume Section", "")
-        if updated_section:
-            self.update_resume(updated_section)
-
-        return result
+        return {"Updated Resume": response, "Message": "Resume has been updated successfully."}
 
     def chat_about_resume(self, user_input: str) -> str:
         current_resume = self.resume_manager.get_resume()

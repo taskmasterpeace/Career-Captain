@@ -10,8 +10,9 @@ import os
 
 class AIManager:
     def __init__(self):
-        self.llm = ChatOpenAI(temperature=0.7, model_name="gpt-3.5-turbo", api_key=os.getenv("OPENAI_API_KEY"))
+        # self.llm = ChatOpenAI(temperature=0.1, model_name="gpt4o-mini", api_key=os.getenv("OPENAI_API_KEY"))
         self.system_message = SystemMessage(content="You are an AI assistant for the CAPTAIN job application system.")
+        self.llm = ChatOpenAI(model_name=LLM_MODEL, temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
         self.memory = ConversationBufferMemory(return_messages=True)
 
     def create_chain(self, prompt_template: str):
@@ -183,7 +184,7 @@ from config import OPENAI_API_KEY, LLM_TEMPERATURE
 
 class AIManager:
     def __init__(self):
-        self.llm = ChatOpenAI(model_name="gpt-4", temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
+        self.llm = ChatOpenAI(model_name="gpt4o-mini", temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
         self.memory = ConversationBufferMemory(return_messages=True)
         self.prompt_templates = {}
         

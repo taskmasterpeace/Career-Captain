@@ -202,14 +202,70 @@ class AIManager:
 {resume_content}
 
 Please format the resume using the following guidelines:
-1. Use Markdown formatting.
+1. Use Markdown formatting throughout.
 2. Start with the candidate's name as a top-level header (# Name).
-3. Follow with sections for Contact Information, Summary, Experience, Education, and Skills.
-4. Use second-level headers (##) for each section.
-5. Use bullet points (-) for listing items under each section.
-6. Ensure consistent spacing between sections.
-7. Highlight key achievements and responsibilities.
-8. Keep the overall structure clean and professional.
+# [Candidate Name]
+3. Structure the resume with the following sections, using second-level headers:
+## Contact Information
+## Professional Summary
+## Work Experience
+## Education
+## Skills
+4. Under each section header, use the following formatting:
+Contact Information:
+
+Use a single line for each piece of contact information.
+Include only available information; do not leave blank lines.
+Format:
+- Email: [email address]
+- Phone: [phone number]
+- Location: [city, state/province, country]
+- LinkedIn: [profile URL] (if available)
+Professional Summary:
+
+Write a brief paragraph (3-5 sentences) summarizing key qualifications and career objectives.
+Use italics for emphasis on key points:
+*[Key skill or qualification]*
+Work Experience:
+
+List each job in reverse chronological order.
+Use third-level headers (###) for job titles and companies:
+Copy### [Job Title] at [Company Name]
+
+Include employment dates on the same line as the job title:
+Copy### [Job Title] at [Company Name] (Month Year - Month Year or Present)
+
+Use bullet points (-) for responsibilities and achievements.
+Start each bullet point with a strong action verb.
+Highlight key achievements or metrics in bold:
+Copy- Increased sales by **25%** through implementation of new marketing strategies
+
+
+Education:
+
+List degrees in reverse chronological order.
+Use the following format:
+Copy- [Degree Name], [Major] - [University Name], [Graduation Year]
+
+Include any relevant coursework, honors, or GPA if noteworthy:
+Copy- Relevant coursework: [Course names]
+- Honors: [Honor or award names]
+- GPA: [X.XX] (if 3.5 or above)
+
+
+Skills:
+
+Group skills into categories (e.g., Technical Skills, Soft Skills, Languages).
+Use a bullet point list for each category:
+Copy- Technical Skills: [Skill 1], [Skill 2], [Skill 3]
+- Soft Skills: [Skill 1], [Skill 2], [Skill 3]
+- Languages: [Language 1] (Fluent), [Language 2] (Intermediate)
+5. Ensure consistent spacing:
+Add a blank line before and after each section header.
+Add a blank line between each job entry in the Work Experience section.
+6. If a section has no content, omit it entirely rather than leaving it empty.
+7. Use consistent capitalization for job titles, degree names, and skill categories.
+8. Limit the use of special characters and formatting to maintain a clean, professional appearance.
 
 Provide the formatted and improved resume:""",
             ["resume_content"]

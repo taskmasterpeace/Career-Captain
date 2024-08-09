@@ -19,7 +19,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         
         gr.Markdown("## Resume Editor")
         
-        resume_editor = gr.Markdown(value=context_manager.get_master_resume(), label="Resume Editor")
+        resume_editor = gr.Textbox(value=context_manager.get_master_resume(), label="Resume Editor", lines=20)
         current_resume_content = gr.State(value=context_manager.get_master_resume())
         is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
         
@@ -81,7 +81,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         if not is_frozen:
             context_manager.update_master_resume(current_content)
         print(f"Updating resume display. Length: {len(current_content)}")  # Debug print
-        return gr.update(value=current_content, interactive=not is_frozen)
+        return gr.update(value=current_content)
 
     def toggle_freeze(is_frozen, current_content):
         if is_frozen:

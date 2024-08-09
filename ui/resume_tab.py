@@ -72,43 +72,43 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             return f"Error processing resume: {str(e)}", ""
 
     def add_resume(file, text):
-        if file is not None and file.name != '':
-            status, formatted_resume = process_resume(file)
-        elif text:
-            status, formatted_resume = process_resume(text)
-        else:
-            status, formatted_resume = "No resume content provided.", ""
-        
-        if formatted_resume:
-            context_manager.update_master_resume(formatted_resume)
-            resume_manager.update_resume(formatted_resume)
-            resume_ai.update_resume(formatted_resume)
-        
-        print(f"Resume added. Length: {len(formatted_resume)}")  # Debug print
-        return status, formatted_resume
+        try:
+            if file is not None and file.name != '':
+                status, formatted_resume = process_resume(file)
+            elif text:
+                status, formatted_resume = process_resume(text)
+            else:
+                status, formatted_resume = "No resume content provided.", ""
+            
+            if formatted_resume:
+                context_manager.update_master_resume(formatted_resume)
+                resume_manager.update_resume(formatted_resume)
+                resume_ai.update_resume(formatted_resume)
+            
+            print(f"Resume added. Length: {len(formatted_resume)}")  # Debug print
+            return status, formatted_resume, formatted_resume
+        except Exception as e:
+            error_message = f"Error processing resume: {str(e)}"
+            return error_message, "", ""
 
     def chat(message, history, current_content):
-        try:
-            if message.lower().startswith(("edit", "change", "update", "modify")):
-                result = resume_ai.edit_resume(message)
-                if isinstance(result, dict) and "error" in result:
-                    response = result["error"]
-                else:
-                    response = f"I've made the following changes:\n\n{result.get('Message', 'No changes made.')}"
-                    updated_resume = result.get('Updated Resume', current_content)
-                    if updated_resume != current_content:
-                        current_content = updated_resume
-                        context_manager.update_master_resume(current_content)
+        if message.lower().startswith(("edit", "change", "update", "modify")):
+            result = resume_ai.edit_resume(message)
+            if isinstance(result, dict) and "error" in result:
+                response = result["error"]
             else:
-                # For non-edit requests, use the AI to generate a response
-                response = resume_ai.chat_about_resume(message)
-        
-            history.append((message, response))
-            return "", history, current_content, f"Resume Status: Updated (Length: {len(current_content)})"
-        except Exception as e:
-            error_message = f"An error occurred: {str(e)}"
-            history.append((message, error_message))
-            return "", history, current_content, f"Resume Status: Error occurred"
+                response = f"I've made the following changes:\n\n{result.get('Explanation of Changes', 'No changes made.')}"
+            updated_resume = resume_ai.resume_manager.get_resume()
+            if updated_resume != current_content:
+                current_content = updated_resume
+                status = f"Resume Status: Updated (Length: {len(current_content)})"
+            else:
+                status = gr.update()  # No change in status
+        else:
+            response = "I'm sorry, I can only process edit requests. Please start your message with 'edit', 'change', 'update', or 'modify'."
+            status = gr.update()  # No change in status
+        history.append((message, response))
+        return "", history, current_content, status
 
     def toggle_freeze(is_frozen):
         return (
@@ -150,7 +150,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_display, resume_editor])
     resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_display, resume_editor])
     
-    msg.submit(chat, inputs=[msg, chatbot, resume_editor], outputs=[msg, chatbot, resume_display, resume_editor, resume_status])
+    msg.submit(chat, inputs=[msg, chatbot, resume_editor], outputs=[msg, chatbot, resume_editor, resume_status])
     clear.click(lambda: None, None, chatbot, queue=False)
 
     is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[resume_display, resume_editor])

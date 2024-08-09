@@ -69,6 +69,11 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         history.append((message, response))
         return "", history, current_content
 
+    def update_chat_context(current_content):
+        return current_content
+
+    resume_editor.change(update_chat_context, inputs=[resume_editor], outputs=[current_resume_content])
+
     def toggle_freeze(is_frozen):
         if is_frozen:
             gr.Warning("Resume is now frozen. You cannot make changes.")

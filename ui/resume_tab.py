@@ -13,8 +13,9 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         gr.Markdown("## Resume Input")
         
         resume_file = gr.File(label="Upload Resume (PDF or TXT)")
-        resume_text_input = gr.Textbox(label="Or paste your resume here", lines=10)
-        add_resume_button = gr.Button("Add Resume from Text")
+        resume_text_input = gr.Textbox(label="Or paste your resume here", lines=10, interactive=True)
+        add_resume_button = gr.Button("Add Resume from File")
+        update_from_paste_button = gr.Button("Update Resume from Pasted Text")
         
         gr.Markdown("## Resume Editor")
         
@@ -46,7 +47,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         msg = gr.Textbox()
         clear = gr.Button("Clear")
 
-    def add_resume(file, text):
+    def add_resume(file):
         if file:
             content = resume_manager.read_resume_file(file.name)
             markdown_content = resume_ai.convert_to_markdown(content)
@@ -54,6 +55,14 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             return "Resume added successfully from file.", markdown_content
         else:
             return "Please upload a file to add a resume.", ""
+
+    def update_from_paste(text):
+        if text:
+            markdown_content = resume_ai.convert_to_markdown(text)
+            resume_ai.update_resume(markdown_content)
+            return "Resume updated successfully from pasted text.", markdown_content
+        else:
+            return "Please paste your resume text before updating.", ""
 
     def update_from_paste(text):
         if text:
@@ -137,7 +146,8 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         else:
             return "Resume is frozen. Cannot update.", content
 
-    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor])
+    add_resume_button.click(add_resume, inputs=[resume_file], outputs=[gr.Markdown(), resume_editor])
+    update_from_paste_button.click(update_from_paste, inputs=[resume_text_input], outputs=[gr.Markdown(), resume_editor])
     update_button.click(update_resume_with_formatting, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
     update_from_paste_button.click(update_from_paste, inputs=[resume_text_input], outputs=[gr.Markdown(), resume_editor])
     analyze_button.click(analyze_resume, inputs=[], outputs=[analysis_output])

@@ -35,22 +35,26 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         if isinstance(file_or_text, str):
             # Text input
             content = file_or_text
-        else:
+        elif hasattr(file_or_text, 'name'):  # Check if it's a file object
             # File input
             try:
                 content = file_or_text.read().decode('utf-8')
             except AttributeError:
                 return "Invalid file format.", ""
+        else:
+            return "Invalid input type.", ""
 
         # Use AI to convert and format the resume
-        formatted_resume = ai_manager.generate_response("format_resume", {"resume_content": content})
-    
-        resume_ai.update_resume(formatted_resume)
-        context_manager.update_master_resume(formatted_resume)
-        return "Resume processed successfully.", formatted_resume
+        try:
+            formatted_resume = ai_manager.generate_response("format_resume", {"resume_content": content})
+            resume_ai.update_resume(formatted_resume)
+            context_manager.update_master_resume(formatted_resume)
+            return "Resume processed successfully.", formatted_resume
+        except Exception as e:
+            return f"Error processing resume: {str(e)}", ""
 
     def add_resume(file, text):
-        if file:
+        if file is not None and file.name != '':
             return process_resume(file)
         elif text:
             return process_resume(text)

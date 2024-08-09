@@ -86,12 +86,16 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         print(f"Resume added. Length: {len(formatted_resume)}")  # Debug print
         return status, formatted_resume, formatted_resume
 
-    def chat(message, history):
-        current_content = context_manager.get_master_resume()
-        print(f"Chat function. Current resume length: {len(current_content)}")  # Debug print
+    def chat(message, history, current_content):
         response = resume_ai.chat_about_resume(message, current_content)
         history.append((message, response))
-        return "", history
+        
+        # If the resume was edited, update the display
+        updated_resume = resume_ai.resume_manager.get_resume()
+        if updated_resume != current_content:
+            return "", history, updated_resume, f"Resume Status: Updated (Length: {len(updated_resume)})"
+        
+        return "", history, current_content, gr.update()
 
     def update_resume_display(is_frozen, current_content):
         if not is_frozen:
@@ -113,7 +117,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, current_resume_content])
     resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, current_resume_content])
     
-    msg.submit(chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
+    msg.submit(chat, inputs=[msg, chatbot, current_resume_content], outputs=[msg, chatbot, resume_editor, resume_status])
     clear.click(lambda: None, None, chatbot, queue=False)
 
     # Handle freezing/unfreezing and updating resume display

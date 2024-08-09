@@ -37,8 +37,19 @@ Your suggestions:"""
         self.resume_manager.update_resume(new_content)
         self.context_manager.update_master_resume(new_content)
 
+    def edit_resume(self, edit_request: str) -> Dict[str, str]:
+        current_resume = self.resume_manager.get_resume()
+        result = self.ai_manager.generate_response("resume_edit", {"current_resume": current_resume, "edit_request": edit_request})
+        
+        # Parse the result and update the resume
+        updated_section = result.get("1. Updated Resume Section", "")
+        if updated_section:
+            self.update_resume(updated_section)
+        
+        return result
+
     def chat_about_resume(self, user_message: str, resume_content: str = None) -> str:
-        if resume_content is None or not resume_content.strip():
+        if resume_content is None:
             resume_content = self.context_manager.get_master_resume()
         
         print(f"Chat about resume. Resume length: {len(resume_content)}")  # Debug print
@@ -46,6 +57,12 @@ Your suggestions:"""
         if not resume_content.strip():
             return "I'm sorry, but I don't have access to your resume. Could you please make sure you've added your resume to the system?"
 
+        # Check if the message is an edit request
+        if user_message.lower().startswith(("edit", "change", "update", "modify")):
+            result = self.edit_resume(user_message)
+            return f"I've made the following changes:\n\n{result.get('2. Explanation of Changes', 'No changes made.')}"
+
+        # If not an edit request, proceed with normal chat
         response = self.ai_manager.generate_response("resume_chat", {
             "resume_content": resume_content,
             "user_input": user_message

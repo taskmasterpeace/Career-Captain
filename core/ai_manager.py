@@ -194,6 +194,33 @@ class AIManager:
             ["resume_content", "user_input"]
         )
         
+        # Add the resume_edit prompt template
+        self.create_prompt_template(
+            "resume_edit",
+            """You are editing the user's master resume. The current version is:
+
+{current_resume}
+
+The user has requested the following change:
+
+{edit_request}
+
+Implement this change while maintaining the overall structure and formatting of the resume. Provide your response in the following format:
+
+1. Updated Resume Section:
+[Provide the updated section here]
+
+2. Explanation of Changes:
+[Explain what was changed and why]
+
+3. Potential Impact:
+[Discuss how this change might affect the overall resume and job applications]
+
+4. Additional Suggestions:
+[Offer any related improvements or cautions]""",
+            ["current_resume", "edit_request"]
+        )
+        
         # Add the format_resume prompt template
         self.create_prompt_template(
             "format_resume",

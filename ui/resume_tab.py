@@ -9,24 +9,40 @@ from langchain_community.document_loaders import TextLoader
 from langchain_text_splitters import CharacterTextSplitter
 
 def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIManager, resume_manager: ResumeManager, resume_ai: ResumeAI):
+    with gr.Blocks() as resume_tab:
+        resume_status = gr.Markdown("Resume Status: Not uploaded")
+        
+        with gr.Row():
+            # Left column: Resume Chat
+            with gr.Column(scale=1):
+                gr.Markdown("## Resume Chat")
+                chatbot = gr.Chatbot(height=400)
+                with gr.Row():
+                    msg = gr.Textbox(label="Ask about your resume", placeholder="Type your question here...")
+                    clear = gr.Button("Clear Chat")
 
-    with gr.Column():
-        gr.Markdown("## Resume Input")
-        
-        resume_file = gr.File(label="Upload Resume (PDF or TXT)")
-        resume_text_input = gr.Textbox(label="Or paste your resume here", lines=10, interactive=True)
-        add_resume_button = gr.Button("Add Resume")
-        
-        gr.Markdown("## Resume Editor")
-        
-        resume_editor = gr.Textbox(value=context_manager.get_master_resume(), label="Resume Editor", lines=20)
-        current_resume_content = gr.State(value=context_manager.get_master_resume())
-        is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
-        
-        gr.Markdown("## Resume Chat")
-        chatbot = gr.Chatbot()
-        msg = gr.Textbox()
-        clear = gr.Button("Clear")
+            # Right column: Resume Editor
+            with gr.Column(scale=1):
+                gr.Markdown("## Resume Editor")
+                resume_editor = gr.Textbox(
+                    value=context_manager.get_master_resume(),
+                    label="Edit your resume",
+                    lines=20,
+                    max_lines=30
+                )
+                current_resume_content = gr.State(value=context_manager.get_master_resume())
+                with gr.Row():
+                    is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
+                    update_resume_btn = gr.Button("Update Resume")
+
+        # Bottom row: Resume Input (in an accordion)
+        with gr.Accordion("Resume Input", open=False):
+            with gr.Row():
+                with gr.Column(scale=1):
+                    resume_file = gr.File(label="Upload Resume (PDF or TXT)")
+                with gr.Column(scale=1):
+                    resume_text_input = gr.Textbox(label="Or paste your resume here", lines=5)
+            add_resume_button = gr.Button("Add Resume")
 
     def process_resume(file_or_text):
         if file_or_text is None:
@@ -81,21 +97,28 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         if not is_frozen:
             context_manager.update_master_resume(current_content)
         print(f"Updating resume display. Length: {len(current_content)}")  # Debug print
-        return gr.update(value=current_content)
+        return gr.update(value=current_content), f"Resume Status: Updated (Length: {len(current_content)})"
 
     def toggle_freeze(is_frozen, current_content):
         if is_frozen:
-            gr.Warning("Resume is now frozen. You cannot make changes.")
+            status = "Resume Status: Frozen"
         else:
-            gr.Warning("Resume is now unfrozen. You can make changes.")
-        return gr.update(interactive=not is_frozen), current_content
+            status = "Resume Status: Editable"
+        return gr.update(interactive=not is_frozen), current_content, status
 
-    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor, current_resume_content])
-    resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor, current_resume_content])
+    def update_resume(current_content):
+        context_manager.update_master_resume(current_content)
+        return f"Resume Status: Updated (Length: {len(current_content)})"
+
+    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, current_resume_content])
+    resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, current_resume_content])
     
     msg.submit(chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)
 
     # Handle freezing/unfreezing and updating resume display
-    is_frozen.change(toggle_freeze, inputs=[is_frozen, resume_editor], outputs=[resume_editor, current_resume_content])
-    resume_editor.change(update_resume_display, inputs=[is_frozen, resume_editor], outputs=[resume_editor])
+    is_frozen.change(toggle_freeze, inputs=[is_frozen, resume_editor], outputs=[resume_editor, current_resume_content, resume_status])
+    resume_editor.change(update_resume_display, inputs=[is_frozen, resume_editor], outputs=[resume_editor, resume_status])
+    update_resume_btn.click(update_resume, inputs=[resume_editor], outputs=[resume_status])
+
+    return resume_tab

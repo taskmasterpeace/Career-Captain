@@ -37,6 +37,20 @@ Your suggestions:"""
         self.resume_manager.update_resume(new_content)
         self.context_manager.update_master_resume(new_content)
 
+    def chat_about_resume(self, user_message: str, resume_content: str) -> str:
+        prompt = f"""You are an AI assistant specializing in resume advice. The user's current resume is:
+
+{resume_content}
+
+User: {user_message}
+AI Assistant: """
+        
+        response = self.ai_manager.generate_response("resume_chat", {
+            "resume_content": resume_content,
+            "user_input": user_message
+        })
+        return response
+
     def convert_to_markdown(self, content: str) -> str:
         # Split the content into lines
         lines = content.split('\n')

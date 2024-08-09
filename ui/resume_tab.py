@@ -96,10 +96,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
 
     def chat(message, history):
         resume_content = resume_editor.value
-        response = ai_manager.generate_response(RESUME_CHAT_PROMPT, {
-            "resume_content": resume_content,
-            "user_input": message
-        })
+        response = resume_ai.chat_about_resume(message, resume_content)
         history.append((message, response))
         return "", history
 

@@ -14,13 +14,16 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         
         resume_file = gr.File(label="Upload Resume (PDF or TXT)")
         resume_text_input = gr.Textbox(label="Or paste your resume here", lines=10)
-        add_resume_button = gr.Button("Add/Update Resume")
+        add_resume_button = gr.Button("Add Resume from Text")
         
         gr.Markdown("## Resume Editor")
         
         resume_editor = gr.Markdown(value=context_manager.get_master_resume(), label="Resume Editor")
         is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
         update_button = gr.Button("Update Resume")
+        
+        # Add a new button for manual update after pasting
+        update_from_paste_button = gr.Button("Update Resume from Pasted Text")
         
         with gr.Row():
             analyze_button = gr.Button("Analyze Resume")
@@ -46,14 +49,19 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     def add_resume(file, text):
         if file:
             content = resume_manager.read_resume_file(file.name)
-        elif text:
-            content = text
+            markdown_content = resume_ai.convert_to_markdown(content)
+            resume_ai.update_resume(markdown_content)
+            return "Resume added successfully from file.", markdown_content
         else:
-            return "Please either upload a file or paste your resume text.", ""
-        
-        markdown_content = resume_ai.convert_to_markdown(content)
-        resume_ai.update_resume(markdown_content)
-        return "Resume added successfully.", markdown_content
+            return "Please upload a file to add a resume.", ""
+
+    def update_from_paste(text):
+        if text:
+            markdown_content = resume_ai.convert_to_markdown(text)
+            resume_ai.update_resume(markdown_content)
+            return "Resume updated successfully from pasted text.", markdown_content
+        else:
+            return "Please paste your resume text before updating.", ""
 
     def update_resume(content, frozen):
         if not frozen:
@@ -131,6 +139,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
 
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor])
     update_button.click(update_resume_with_formatting, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
+    update_from_paste_button.click(update_from_paste, inputs=[resume_text_input], outputs=[gr.Markdown(), resume_editor])
     analyze_button.click(analyze_resume, inputs=[], outputs=[analysis_output])
     suggest_button.click(suggest_improvements, inputs=[], outputs=[suggestions_output])
     versions_dropdown.change(None, inputs=[versions_dropdown], outputs=[versions_dropdown])

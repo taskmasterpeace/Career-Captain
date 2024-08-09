@@ -1,10 +1,10 @@
 # core/ai_manager.py
 
-from langchain_openai import ChatOpenAI
-from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.messages import SystemMessage, HumanMessage
-from langchain_core.memory import ConversationBufferMemory
+from langchain.chat_models import ChatOpenAI
+from langchain.prompts import PromptTemplate, ChatPromptTemplate
+from langchain.schema import SystemMessage, HumanMessage
+from langchain.output_parsers import StrOutputParser
+from langchain.memory import ConversationBufferMemory
 from typing import List, Dict, Any
 import os
 

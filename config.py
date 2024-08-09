@@ -22,7 +22,7 @@ JOB_APPLICATIONS_FILE = os.path.join(DATA_DIR, "job_applications.json")
 
 # LLM Configuration
 LLM_TEMPERATURE = 0.7
-LLM_MODEL = "gpt4o-mini"
+LLM_MODEL = "gpt-4o-mini"
 # Gradio app configuration
 from gradio.themes import Base, Size, Color
 

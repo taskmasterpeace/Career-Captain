@@ -184,7 +184,7 @@ from config import OPENAI_API_KEY, LLM_TEMPERATURE, LLM_MODEL
 
 class AIManager:
     def __init__(self):
-        self.llm = ChatOpenAI(model_name="gpt4o-mini", temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
+        self.llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
         self.memory = ConversationBufferMemory(return_messages=True)
         self.prompt_templates = {}
         

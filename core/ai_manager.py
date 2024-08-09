@@ -180,11 +180,11 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage, AIMessage
-from config import OPENAI_API_KEY, LLM_TEMPERATURE, LLM_MODEL
+from config import OPENAI_API_KEY, LLM_TEMPERATURE
 
 class AIManager:
     def __init__(self):
-        self.llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
+        self.llm = ChatOpenAI(model_name="gpt4o-mini", temperature=LLM_TEMPERATURE, api_key=OPENAI_API_KEY)
         self.memory = ConversationBufferMemory(return_messages=True)
         self.prompt_templates = {}
         

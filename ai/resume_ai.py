@@ -48,67 +48,9 @@ Your suggestions:"""
         
         return result
 
-    def chat_about_resume(self, user_message: str, resume_content: str = None) -> str:
-        if resume_content is None:
-            resume_content = self.context_manager.get_master_resume()
-        
-        print(f"Chat about resume. Resume length: {len(resume_content)}")  # Debug print
-        
-        if not resume_content.strip():
-            return "I'm sorry, but I don't have access to your resume. Could you please make sure you've added your resume to the system?"
-
-        # Check if the message is an edit request
-        if user_message.lower().startswith(("edit", "change", "update", "modify")):
-            result = self.edit_resume(user_message)
-            return f"I've made the following changes:\n\n{result.get('2. Explanation of Changes', 'No changes made.')}"
-
-        # If not an edit request, proceed with normal chat
-        response = self.ai_manager.generate_response("resume_chat", {
-            "resume_content": resume_content,
-            "user_input": user_message
-        })
-        return response
-
-    def _split_resume(self, resume_content: str, max_chunk_size: int = 1000) -> List[str]:
-        # Split the resume into chunks of maximum 1000 characters
-        chunks = []
-        current_chunk = ""
-        for line in resume_content.split('\n'):
-            if len(current_chunk) + len(line) > max_chunk_size:
-                chunks.append(current_chunk.strip())
-                current_chunk = line
-            else:
-                current_chunk += "\n" + line
-        if current_chunk:
-            chunks.append(current_chunk.strip())
-        return chunks
-
-    def convert_to_markdown(self, content: str) -> str:
-        # Split the content into lines
-        lines = content.split('\n')
-        markdown_lines = []
-        
-        for line in lines:
-            # Remove leading/trailing whitespace
-            line = line.strip()
-            
-            # Convert headers (assume lines in all caps are headers)
-            if line.isupper():
-                markdown_lines.append(f"## {line}")
-            # Convert bullet points
-            elif line.startswith('•') or line.startswith('-'):
-                markdown_lines.append(line)
-            # Convert everything else to regular text
-            elif line:
-                markdown_lines.append(line)
-            # Preserve empty lines
-            else:
-                markdown_lines.append('')
-        
-        # Join the lines back together
-        return '\n'.join(markdown_lines)
-
     def edit_resume(self, edit_request: str) -> Dict[str, str]:
+        if not edit_request.lower().startswith(("edit", "change", "update", "modify")):
+            return {"error": "Invalid edit request. Please start your request with 'edit', 'change', 'update', or 'modify'."}
         current_resume = self.resume_manager.get_resume()
         prompt = f"""You are editing the user's master resume. The current version is:
 

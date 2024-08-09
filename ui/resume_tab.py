@@ -87,15 +87,20 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         return status, formatted_resume, formatted_resume
 
     def chat(message, history, current_content):
-        response = resume_ai.chat_about_resume(message, current_content)
+        if message.lower().startswith(("edit", "change", "update", "modify")):
+            result = resume_ai.edit_resume(message)
+            if "error" in result:
+                response = result["error"]
+            else:
+                response = f"I've made the following changes:\n\n{result.get('2. Explanation of Changes', 'No changes made.')}"
+                updated_resume = resume_ai.resume_manager.get_resume()
+                if updated_resume != current_content:
+                    current_content = updated_resume
+        else:
+            response = "I'm sorry, I can only process edit requests. Please start your message with 'edit', 'change', 'update', or 'modify'."
+        
         history.append((message, response))
-        
-        # If the resume was edited, update the display
-        updated_resume = resume_ai.resume_manager.get_resume()
-        if updated_resume != current_content:
-            return "", history, updated_resume, f"Resume Status: Updated (Length: {len(updated_resume)})"
-        
-        return "", history, current_content, gr.update()
+        return "", history, current_content, f"Resume Status: Updated (Length: {len(current_content)})"
 
     def update_resume_display(is_frozen, current_content):
         if not is_frozen:

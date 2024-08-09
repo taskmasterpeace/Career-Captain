@@ -24,11 +24,17 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             # Right column: Resume Editor
             with gr.Column(scale=1):
                 gr.Markdown("## Resume Editor")
-                resume_editor = gr.Textbox(
+                resume_editor = gr.Markdown(
                     value=context_manager.get_master_resume(),
-                    label="Edit your resume",
+                    label="Your Resume (Markdown)",
+                    elem_id="resume-markdown"
+                )
+                resume_editor_raw = gr.Textbox(
+                    value=context_manager.get_master_resume(),
+                    label="Edit your resume (Markdown)",
                     lines=20,
-                    max_lines=30
+                    max_lines=30,
+                    elem_id="resume-editor"
                 )
                 current_resume_content = gr.State(value=context_manager.get_master_resume())
                 with gr.Row():
@@ -113,28 +119,28 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         if not is_frozen:
             context_manager.update_master_resume(current_content)
         print(f"Updating resume display. Length: {len(current_content)}")  # Debug print
-        return gr.update(value=current_content), f"Resume Status: Updated (Length: {len(current_content)})"
+        return gr.update(value=current_content), gr.update(value=current_content), f"Resume Status: Updated (Length: {len(current_content)})"
 
     def toggle_freeze(is_frozen, current_content):
         if is_frozen:
             status = "Resume Status: Frozen"
         else:
             status = "Resume Status: Editable"
-        return gr.update(interactive=not is_frozen), current_content, status
+        return gr.update(interactive=not is_frozen), gr.update(interactive=not is_frozen), current_content, status
 
     def update_resume(current_content):
         context_manager.update_master_resume(current_content)
-        return f"Resume Status: Updated (Length: {len(current_content)})"
+        return current_content, f"Resume Status: Updated (Length: {len(current_content)})"
 
-    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, current_resume_content])
-    resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, current_resume_content])
+    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, resume_editor_raw, current_resume_content])
+    resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_editor, resume_editor_raw, current_resume_content])
     
-    msg.submit(chat, inputs=[msg, chatbot, current_resume_content], outputs=[msg, chatbot, resume_editor, resume_status])
+    msg.submit(chat, inputs=[msg, chatbot, current_resume_content], outputs=[msg, chatbot, resume_editor, resume_editor_raw, resume_status])
     clear.click(lambda: None, None, chatbot, queue=False)
 
     # Handle freezing/unfreezing and updating resume display
-    is_frozen.change(toggle_freeze, inputs=[is_frozen, resume_editor], outputs=[resume_editor, current_resume_content, resume_status])
-    resume_editor.change(update_resume_display, inputs=[is_frozen, resume_editor], outputs=[resume_editor, resume_status])
-    update_resume_btn.click(update_resume, inputs=[resume_editor], outputs=[resume_status])
+    is_frozen.change(toggle_freeze, inputs=[is_frozen, resume_editor_raw], outputs=[resume_editor_raw, resume_editor, current_resume_content, resume_status])
+    resume_editor_raw.change(update_resume_display, inputs=[is_frozen, resume_editor_raw], outputs=[resume_editor, resume_editor_raw, resume_status])
+    update_resume_btn.click(update_resume, inputs=[resume_editor_raw], outputs=[resume_editor, resume_status])
 
     return resume_tab

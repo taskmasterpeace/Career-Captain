@@ -7,6 +7,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.memory import ConversationBufferMemory
 from typing import List, Dict, Any
 import os
+from config import LLM_MODEL, LLM_TEMPERATURE, OPENAI_API_KEY
 
 class AIManager:
     def __init__(self):

@@ -101,7 +101,14 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         return "", history
 
     def toggle_freeze(is_frozen):
+        if is_frozen:
+            gr.Warning("Resume is now frozen. You cannot make changes.")
+        else:
+            gr.Warning("Resume is now unfrozen. You can make changes.")
         return is_frozen
+
+    def get_resume_content():
+        return resume_editor.value
 
     def format_resume(content):
         sections = content.split('\n\n')
@@ -133,6 +140,12 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
 
     msg.submit(chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)
+
+    # Update the resume content for the chatbot
+    resume_editor.change(get_resume_content, outputs=[resume_editor])
+
+    # Handle freezing/unfreezing
+    is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[is_frozen])
 
     # Update dropdowns when the tab is opened
     # You may need to implement a custom event handler for this functionality

@@ -51,15 +51,17 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             context_manager.update_master_resume(formatted_resume)
             return "Resume processed successfully.", formatted_resume
         except Exception as e:
+            print(f"Error processing resume: {str(e)}")  # For debugging
             return f"Error processing resume: {str(e)}", ""
 
     def add_resume(file, text):
         if file is not None and file.name != '':
-            return process_resume(file)
+            status, formatted_resume = process_resume(file)
         elif text:
-            return process_resume(text)
+            status, formatted_resume = process_resume(text)
         else:
-            return "No resume content provided.", ""
+            status, formatted_resume = "No resume content provided.", ""
+        return status, formatted_resume, formatted_resume
 
     def chat(message, history):
         current_content = resume_editor.value

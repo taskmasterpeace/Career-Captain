@@ -184,6 +184,13 @@ class AIManager:
             "You are an AI assistant specializing in resume advice. The user's current resume is:\n\n{resume_content}\n\nUser: {user_input}\nAI Assistant:",
             ["resume_content", "user_input"]
         )
+        
+        # Add the format_resume prompt template
+        self.create_prompt_template(
+            "format_resume",
+            "Format and improve the following resume content:\n\n{resume_content}\n\nProvide the formatted and improved resume:",
+            ["resume_content"]
+        )
 
     def create_prompt_template(self, name: str, template: str, input_variables: List[str]):
         self.prompt_templates[name] = PromptTemplate(template=template, input_variables=input_variables)

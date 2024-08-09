@@ -29,26 +29,33 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         clear = gr.Button("Clear")
 
     def process_resume(file_or_text):
+        if file_or_text is None:
+            return "No resume content provided.", ""
+
         if isinstance(file_or_text, str):
             # Text input
-            loader = TextLoader(file_or_text)
+            content = file_or_text
         else:
             # File input
-            loader = TextLoader(file_or_text.name)
-        
-        documents = loader.load()
-        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
-        splits = text_splitter.split_documents(documents)
-        
+            try:
+                content = file_or_text.read().decode('utf-8')
+            except AttributeError:
+                return "Invalid file format.", ""
+
         # Use AI to convert and format the resume
-        formatted_resume = ai_manager.generate_response("format_resume", {"resume_content": splits})
-        
+        formatted_resume = ai_manager.generate_response("format_resume", {"resume_content": content})
+    
         resume_ai.update_resume(formatted_resume)
         context_manager.update_master_resume(formatted_resume)
         return "Resume processed successfully.", formatted_resume
 
-    def add_resume(file_or_text):
-        return process_resume(file_or_text if file_or_text else resume_text_input.value)
+    def add_resume(file, text):
+        if file:
+            return process_resume(file)
+        elif text:
+            return process_resume(text)
+        else:
+            return "No resume content provided.", ""
 
     def chat(message, history):
         current_content = resume_editor.value
@@ -63,8 +70,8 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
             gr.Warning("Resume is now unfrozen. You can make changes.")
         return is_frozen
 
-    add_resume_button.click(add_resume, inputs=[resume_file], outputs=[gr.Markdown(), resume_editor, current_resume_content])
-    resume_text_input.submit(add_resume, inputs=[resume_text_input], outputs=[gr.Markdown(), resume_editor, current_resume_content])
+    add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor, current_resume_content])
+    resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor, current_resume_content])
     
     msg.submit(chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)

@@ -93,27 +93,27 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         return status, formatted_resume, formatted_resume, formatted_resume
 
     def chat(message, history, current_content):
-        if message.lower().startswith(("edit", "change", "update", "modify")):
-            try:
+        try:
+            if message.lower().startswith(("edit", "change", "update", "modify")):
                 result = resume_ai.edit_resume(message)
-                if "error" in result:
+                if isinstance(result, dict) and "error" in result:
                     response = result["error"]
                 else:
-                    response = f"I've made the following changes:\n\n{result.get('2. Explanation of Changes', 'No changes made.')}"
-                    updated_resume = resume_ai.resume_manager.get_resume()
+                    response = f"I've made the following changes:\n\n{result.get('Message', 'No changes made.')}"
+                    updated_resume = result.get('Updated Resume', current_content)
                     if updated_resume != current_content:
                         current_content = updated_resume
-            except Exception as e:
-                response = f"An error occurred while processing your edit request: {str(e)}"
-        else:
-            # For non-edit requests, use the AI to generate a response
-            try:
-                response = resume_ai.ai_manager.generate_response("resume_chat", {"resume_content": current_content, "user_input": message})
-            except Exception as e:
-                response = f"An error occurred while processing your request: {str(e)}"
+                        context_manager.update_master_resume(current_content)
+            else:
+                # For non-edit requests, use the AI to generate a response
+                response = resume_ai.chat_about_resume(message)
         
-        history.append((message, response))
-        return "", history, current_content, f"Resume Status: Updated (Length: {len(current_content)})"
+            history.append((message, response))
+            return "", history, current_content, f"Resume Status: Updated (Length: {len(current_content)})"
+        except Exception as e:
+            error_message = f"An error occurred: {str(e)}"
+            history.append((message, error_message))
+            return "", history, current_content, f"Resume Status: Error occurred"
 
     def update_resume_display(is_frozen, current_content):
         if not is_frozen:

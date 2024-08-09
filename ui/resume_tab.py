@@ -29,6 +29,9 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
                     label="Your Resume (Markdown)",
                     elem_id="resume-markdown"
                 )
+                with gr.Row():
+                    is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
+                    update_resume_btn = gr.Button("Update Resume")
                 resume_editor_raw = gr.Textbox(
                     value=context_manager.get_master_resume(),
                     label="Edit your resume (Markdown)",
@@ -37,9 +40,6 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
                     elem_id="resume-editor"
                 )
                 current_resume_content = gr.State(value=context_manager.get_master_resume())
-                with gr.Row():
-                    is_frozen = gr.Checkbox(label="Freeze Resume", value=False)
-                    update_resume_btn = gr.Button("Update Resume")
 
         # Bottom row: Resume Input (in an accordion)
         with gr.Accordion("Resume Input", open=False):
@@ -122,11 +122,15 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         return gr.update(value=current_content), gr.update(value=current_content), f"Resume Status: Updated (Length: {len(current_content)})"
 
     def toggle_freeze(is_frozen, current_content):
-        if is_frozen:
-            status = "Resume Status: Frozen"
-        else:
-            status = "Resume Status: Editable"
-        return gr.update(interactive=not is_frozen), gr.update(interactive=not is_frozen), current_content, status
+        try:
+            if is_frozen:
+                status = "Resume Status: Frozen"
+            else:
+                status = "Resume Status: Editable"
+            return gr.update(interactive=not is_frozen), gr.update(interactive=not is_frozen), current_content, status
+        except Exception as e:
+            print(f"Error in toggle_freeze: {str(e)}")
+            return gr.update(), gr.update(), current_content, f"Error: {str(e)}"
 
     def update_resume(current_content):
         context_manager.update_master_resume(current_content)

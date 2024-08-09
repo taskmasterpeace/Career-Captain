@@ -49,8 +49,6 @@ Your suggestions:"""
         return result
 
     def edit_resume(self, edit_request: str) -> Dict[str, str]:
-        if not edit_request.lower().startswith(("edit", "change", "update", "modify")):
-            return {"error": "Invalid edit request. Please start your request with 'edit', 'change', 'update', or 'modify'."}
         current_resume = self.resume_manager.get_resume()
         prompt = f"""You are editing the user's master resume. The current version is:
 
@@ -62,12 +60,15 @@ The user has requested the following change:
 
 Implement this change by providing a complete, updated version of the resume. Make sure to include all sections, even those not affected by the edit. Your response should be the entire updated resume in Markdown format."""
 
-        response = self.ai_manager.generate_response("resume_edit", {"current_resume": current_resume, "edit_request": edit_request})
-        
-        # Update the entire resume with the new content
-        self.update_resume(response)
+        try:
+            response = self.ai_manager.generate_response("resume_edit", {"current_resume": current_resume, "edit_request": edit_request})
+            
+            # Update the entire resume with the new content
+            self.update_resume(response)
 
-        return {"Updated Resume": response, "Message": "Resume has been updated successfully."}
+            return {"Updated Resume": response, "Message": "Resume has been updated successfully."}
+        except Exception as e:
+            return {"error": f"An error occurred while editing the resume: {str(e)}"}
 
     def chat_about_resume(self, user_input: str) -> str:
         current_resume = self.resume_manager.get_resume()

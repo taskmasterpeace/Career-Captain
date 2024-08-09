@@ -106,8 +106,27 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     def toggle_freeze(is_frozen):
         return is_frozen
 
+    def format_resume(content):
+        sections = content.split('\n\n')
+        formatted_sections = []
+        for section in sections:
+            lines = section.split('\n')
+            if lines[0].startswith('#'):
+                formatted_sections.append(f"\n\n{section}")
+            else:
+                formatted_sections.append(section)
+        return '\n\n'.join(formatted_sections)
+
+    def update_resume_with_formatting(content, frozen):
+        if not frozen:
+            formatted_content = format_resume(content)
+            resume_ai.update_resume(formatted_content)
+            return "Resume updated successfully.", formatted_content
+        else:
+            return "Resume is frozen. Cannot update.", content
+
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[gr.Markdown(), resume_editor])
-    update_button.click(update_resume, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
+    update_button.click(update_resume_with_formatting, inputs=[resume_editor, is_frozen], outputs=[gr.Markdown(), resume_editor])
     analyze_button.click(analyze_resume, inputs=[], outputs=[analysis_output])
     suggest_button.click(suggest_improvements, inputs=[], outputs=[suggestions_output])
     versions_dropdown.change(None, inputs=[versions_dropdown], outputs=[versions_dropdown])
@@ -115,7 +134,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     generate_cover_letter_button.click(generate_cover_letter, inputs=[job_dropdown], outputs=[cover_letter_output])
     is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[is_frozen])
 
-    msg.submit(chat, [msg, chatbot], [msg, chatbot])
+    msg.submit(chat, inputs=[msg, chatbot], outputs=[msg, chatbot])
     clear.click(lambda: None, None, chatbot, queue=False)
 
     # Update dropdowns when the tab is opened

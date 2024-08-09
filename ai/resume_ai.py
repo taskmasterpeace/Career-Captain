@@ -82,8 +82,12 @@ Implement this change while maintaining the overall structure and formatting of 
         sections = response.split('\n\n')
         result = {}
         for section in sections:
-            key, value = section.split(':', 1)
-            result[key.strip()] = value.strip()
+            if ':' in section:
+                key, value = section.split(':', 1)
+                result[key.strip()] = value.strip()
+            else:
+                # Handle cases where there's no colon, e.g., the updated resume section
+                result["1. Updated Resume Section"] = section.strip()
 
         # Update the resume with the new content
         updated_section = result.get("1. Updated Resume Section", "")
@@ -91,3 +95,8 @@ Implement this change while maintaining the overall structure and formatting of 
             self.update_resume(updated_section)
 
         return result
+
+    def chat_about_resume(self, user_input: str) -> str:
+        current_resume = self.resume_manager.get_resume()
+        response = self.ai_manager.generate_response("resume_chat", {"resume_content": current_resume, "user_input": user_input})
+        return response

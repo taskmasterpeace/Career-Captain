@@ -88,16 +88,23 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
 
     def chat(message, history, current_content):
         if message.lower().startswith(("edit", "change", "update", "modify")):
-            result = resume_ai.edit_resume(message)
-            if "error" in result:
-                response = result["error"]
-            else:
-                response = f"I've made the following changes:\n\n{result.get('2. Explanation of Changes', 'No changes made.')}"
-                updated_resume = resume_ai.resume_manager.get_resume()
-                if updated_resume != current_content:
-                    current_content = updated_resume
+            try:
+                result = resume_ai.edit_resume(message)
+                if "error" in result:
+                    response = result["error"]
+                else:
+                    response = f"I've made the following changes:\n\n{result.get('2. Explanation of Changes', 'No changes made.')}"
+                    updated_resume = resume_ai.resume_manager.get_resume()
+                    if updated_resume != current_content:
+                        current_content = updated_resume
+            except Exception as e:
+                response = f"An error occurred while processing your edit request: {str(e)}"
         else:
-            response = "I'm sorry, I can only process edit requests. Please start your message with 'edit', 'change', 'update', or 'modify'."
+            # For non-edit requests, use the AI to generate a response
+            try:
+                response = resume_ai.ai_manager.generate_response("resume_chat", {"resume_content": current_content, "user_input": message})
+            except Exception as e:
+                response = f"An error occurred while processing your request: {str(e)}"
         
         history.append((message, response))
         return "", history, current_content, f"Resume Status: Updated (Length: {len(current_content)})"

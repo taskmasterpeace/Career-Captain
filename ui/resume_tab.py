@@ -132,20 +132,47 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
                 if isinstance(result, dict) and "error" in result:
                     response = result["error"]
                 else:
-                    response = f"I've made the following changes:\n\n{result.get('Message', 'No changes made.')}"
                     updated_resume = result.get('Updated Resume', current_content)
+                    explanation = result.get('Explanation of Changes', 'No changes made.')
+                    response = f"I've made the following changes:\n\n{explanation}"
+                
                     if updated_resume != current_content:
                         current_content = updated_resume
                         context_manager.update_master_resume(current_content)
             else:
                 response = resume_ai.chat_about_resume(message)
-        
+    
             history.append((message, response))
             return "", history, current_content, current_content, f"Resume Status: Updated (Length: {len(current_content)})"
         except Exception as e:
             error_message = f"An error occurred: {str(e)}"
             history.append((message, error_message))
             return "", history, current_content, current_content, f"Resume Status: Error occurred"
+
+    # Update the layout to remove the separate AI Edit Output Area
+    with gr.Blocks() as resume_tab:
+        with gr.Row():
+            with gr.Column(scale=1):
+                gr.Markdown("## Resume Chat")
+                chatbot = gr.Chatbot(height=400)
+                msg = gr.Textbox(label="Ask about your resume or request edits", placeholder="Type your question or edit request here...")
+                clear = gr.Button("Clear Chat")
+
+            with gr.Column(scale=1):
+                gr.Markdown("## Resume")
+                resume_display = gr.Markdown(value=context_manager.get_master_resume())
+                resume_editor = gr.TextArea(
+                    value=context_manager.get_master_resume(),
+                    label="Edit Your Resume (Markdown)",
+                    lines=20,
+                    max_lines=30,
+                    visible=False
+                )
+                with gr.Row():
+                    is_frozen = gr.Checkbox(label="Freeze Resume", value=True)
+                    update_resume_btn = gr.Button("Update Resume")
+
+        # ... (rest of the code remains the same)
 
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_display, resume_editor])
     resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_display, resume_editor])

@@ -39,12 +39,32 @@ Your suggestions:"""
 
     def edit_resume(self, edit_request: str) -> Dict[str, str]:
         current_resume = self.resume_manager.get_resume()
-        result = self.ai_manager.generate_response("resume_edit", {"current_resume": current_resume, "edit_request": edit_request})
+        prompt = f"""You are editing the user's master resume. The current version is:
+
+{current_resume}
+
+The user has requested the following change:
+
+{edit_request}
+
+Implement this change by providing a complete, updated version of the resume. Make sure to include all sections, even those not affected by the edit. Your response should be the entire updated resume in Markdown format.
+
+After the updated resume, provide a brief explanation of the changes made."""
+
+        result = self.ai_manager.generate_response("resume_edit", {"prompt": prompt})
         
-        # Parse the result and update the resume
-        updated_section = result.get("1. Updated Resume Section", "")
-        if updated_section:
-            self.update_resume(updated_section)
+        # Split the response into updated resume and explanation
+        parts = result.split("\n\nExplanation of changes:")
+        updated_resume = parts[0].strip()
+        explanation = parts[1].strip() if len(parts) > 1 else "Changes applied as requested."
+        
+        # Update the entire resume with the new content
+        self.update_resume(updated_resume)
+
+        return {
+            "Updated Resume": updated_resume,
+            "Explanation of Changes": explanation,
+        }
         
         return result
 

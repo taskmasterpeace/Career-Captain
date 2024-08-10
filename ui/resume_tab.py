@@ -114,14 +114,28 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         )
 
     def update_resume(content):
-        # Ensure content is only the resume, not including chat messages
-        context_manager.update_master_resume(content)
-        resume_manager.update_resume(content)
+        # Extract only the markdown content
+        markdown_content = extract_markdown(content)
+    
+        # Update the resume with only the markdown content
+        context_manager.update_master_resume(markdown_content)
+        resume_manager.update_resume(markdown_content)
+    
         return (
-            content,  # update resume_display
-            content,  # update resume_editor
-            f"Resume Status: Updated (Length: {len(content)})"
+            markdown_content,  # update resume_display
+            markdown_content,  # update resume_editor
+            f"Resume Status: Updated (Length: {len(markdown_content)})"
         )
+
+    def extract_markdown(content):
+        # Split the content by lines
+        lines = content.split('\n')
+    
+        # Filter out lines that start with numbers and periods (e.g., "1. ", "2. ")
+        markdown_lines = [line for line in lines if not line.strip().startswith(tuple(f"{i}. " for i in range(1, 10)))]
+    
+        # Join the filtered lines back into a single string
+        return '\n'.join(markdown_lines)
 
     def chat(message, history, current_content):
         try:
@@ -159,3 +173,16 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
     update_resume_btn.click(update_resume, inputs=[resume_editor], outputs=[resume_display, resume_editor, resume_status])
 
     return resume_tab
+def handle_resume_edit(edit_request, current_content):
+    result = resume_ai.edit_resume(edit_request)
+    if isinstance(result, dict):
+        updated_resume = result.get('Updated Resume', current_content)
+        explanation = result.get('Edit Explanation', 'No changes made.')
+        
+        # Update the resume content
+        context_manager.update_master_resume(updated_resume)
+        resume_manager.update_resume(updated_resume)
+        
+        return updated_resume, explanation
+    else:
+        return current_content, "Error: Unexpected response format from AI."

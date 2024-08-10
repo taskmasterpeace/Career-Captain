@@ -90,22 +90,18 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
 
     def chat(message, history, current_content):
         if message.lower().startswith(("edit", "change", "update", "modify")):
-            result = resume_ai.edit_resume(message)
-            if isinstance(result, dict) and "error" in result:
-                response = result["error"]
-            else:
-                response = f"I've made the following changes:\n\n{result.get('Explanation of Changes', 'No changes made.')}"
-            updated_resume = resume_ai.resume_manager.get_resume()
+            updated_resume, explanation = handle_resume_edit(message, current_content)
+            response = f"I've made the following changes:\n\n{explanation}"
             if updated_resume != current_content:
                 current_content = updated_resume
                 status = f"Resume Status: Updated (Length: {len(current_content)})"
             else:
                 status = gr.update()  # No change in status
         else:
-            response = "I'm sorry, I can only process edit requests. Please start your message with 'edit', 'change', 'update', or 'modify'."
+            response = resume_ai.chat_about_resume(message)
             status = gr.update()  # No change in status
         history.append((message, response))
-        return "", history, current_content, status
+        return "", history, current_content, current_content, status
 
     def toggle_freeze(is_frozen):
         return (
@@ -137,52 +133,29 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         # Join the filtered lines back into a single string
         return '\n'.join(markdown_lines)
 
-    def chat(message, history, current_content):
-        try:
-            if message.lower().startswith(("edit", "change", "update", "modify")):
-                result = resume_ai.edit_resume(message)
-                if isinstance(result, dict) and "error" in result:
-                    response = result["error"]
-                else:
-                    updated_resume = result.get('Updated Resume', current_content)
-                    explanation = result.get('Explanation of Changes', 'No changes made.')
-                    response = f"I've made the following changes:\n\n{explanation}"
-                
-                    if updated_resume != current_content:
-                        current_content = updated_resume
-                        context_manager.update_master_resume(current_content)
-            else:
-                response = resume_ai.chat_about_resume(message)
-    
-            history.append((message, response))
-            return "", history, current_content, current_content, f"Resume Status: Updated (Length: {len(current_content)})"
-        except Exception as e:
-            error_message = f"An error occurred: {str(e)}"
-            history.append((message, error_message))
-            return "", history, current_content, current_content, f"Resume Status: Error occurred"
+    def handle_resume_edit(edit_request, current_content):
+        result = resume_ai.edit_resume(edit_request)
+        if isinstance(result, dict):
+            updated_resume = result.get('Updated Resume', current_content)
+            explanation = result.get('Edit Explanation', 'No changes made.')
+            
+            # Update the resume content
+            context_manager.update_master_resume(updated_resume)
+            resume_manager.update_resume(updated_resume)
+            
+            return updated_resume, explanation
+        else:
+            return current_content, "Error: Unexpected response format from AI."
 
     # Event handlers
 
     add_resume_button.click(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_display, resume_editor])
     resume_text_input.submit(add_resume, inputs=[resume_file, resume_text_input], outputs=[resume_status, resume_display, resume_editor])
     
-    msg.submit(chat, inputs=[msg, chatbot, resume_editor], outputs=[msg, chatbot, resume_editor, resume_status])
+    msg.submit(chat, inputs=[msg, chatbot, resume_editor], outputs=[msg, chatbot, resume_editor, resume_display, resume_status])
     clear.click(lambda: None, None, chatbot, queue=False)
 
     is_frozen.change(toggle_freeze, inputs=[is_frozen], outputs=[resume_display, resume_editor])
     update_resume_btn.click(update_resume, inputs=[resume_editor], outputs=[resume_display, resume_editor, resume_status])
 
     return resume_tab
-def handle_resume_edit(edit_request, current_content):
-    result = resume_ai.edit_resume(edit_request)
-    if isinstance(result, dict):
-        updated_resume = result.get('Updated Resume', current_content)
-        explanation = result.get('Edit Explanation', 'No changes made.')
-        
-        # Update the resume content
-        context_manager.update_master_resume(updated_resume)
-        resume_manager.update_resume(updated_resume)
-        
-        return updated_resume, explanation
-    else:
-        return current_content, "Error: Unexpected response format from AI."

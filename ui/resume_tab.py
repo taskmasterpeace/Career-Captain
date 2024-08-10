@@ -20,7 +20,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
                 clear = gr.Button("Clear Chat")
 
             with gr.Column(scale=1):
-                gr.Markdown("## Resume")
+                gr.Markdown("## Current Resume")
                 resume_display = gr.Markdown(value=context_manager.get_master_resume())
                 resume_editor = gr.TextArea(
                     value=context_manager.get_master_resume(),
@@ -114,6 +114,7 @@ def create_resume_tab(context_manager: CAPTAINContextManager, ai_manager: AIMana
         )
 
     def update_resume(content):
+        # Ensure content is only the resume, not including chat messages
         context_manager.update_master_resume(content)
         resume_manager.update_resume(content)
         return (
